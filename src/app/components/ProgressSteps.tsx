@@ -19,7 +19,7 @@ export function ProgressSteps({ steps, current }: ProgressStepsProps) {
           <React.Fragment key={step}>
             <div className="flex flex-col items-center gap-1">
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0"
                 style={{
                   background: isCompleted ? COLORS.green : isActive ? COLORS.blue : COLORS.grayLight,
                   color: isCompleted || isActive ? 'white' : COLORS.gray,
@@ -27,18 +27,18 @@ export function ProgressSteps({ steps, current }: ProgressStepsProps) {
                 }}
               >
                 {isCompleted ? (
-                  <Check size={14} />
+                  <Check size={16} />
                 ) : (
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>{stepNum}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>{stepNum}</span>
                 )}
               </div>
               <span
                 className="text-center hidden sm:block"
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: isActive ? 600 : 400,
                   color: isActive ? COLORS.blue : isCompleted ? COLORS.green : COLORS.gray,
-                  maxWidth: 60,
+                  maxWidth: 72,
                   lineHeight: 1.2,
                 }}
               >

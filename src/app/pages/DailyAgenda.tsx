@@ -9,7 +9,7 @@ import { COLORS, APPOINTMENTS_TODAY, DOCTORS, PATIENTS } from '../data/mockData'
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   Confirmada: { bg: '#E3F2FD', text: COLORS.blue },
   Completada: { bg: COLORS.greenLight, text: COLORS.green },
-  Pendiente: { bg: '#FFF3E0', text: '#F57C00' },
+  Pendiente: { bg: '#FFF3E0', text: '#E65100' },
   Cancelada: { bg: COLORS.errorLight, text: COLORS.error },
 };
 
@@ -40,7 +40,7 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ background: COLORS.text }}>
           <div className="flex items-center gap-2">
-            <RefreshCw size={18} className="text-white" />
+            <RefreshCw size={18} className="text-white" aria-hidden="true" />
             <h3 className="text-white text-base" style={{ fontWeight: 700 }}>Re-agendar cita</h3>
           </div>
           <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
@@ -60,7 +60,7 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
             {/* Current appointment info */}
             <div className="rounded-xl p-4" style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}>
               <p className="text-xs mb-3" style={{ color: COLORS.gray, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>
-                Información actual (read-only)
+                Información actual (solo lectura)
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -70,8 +70,8 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
                   { label: 'Especialidad', value: appointment.specialty },
                 ].map((item) => (
                   <div key={item.label}>
-                    <p style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, textTransform: 'uppercase' }}>{item.label}</p>
-                    <p style={{ fontSize: 13, color: COLORS.text, fontWeight: 600 }}>{item.value}</p>
+                    <p style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600, textTransform: 'uppercase' }}>{item.label}</p>
+                    <p style={{ fontSize: 14, color: COLORS.text, fontWeight: 600 }}>{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -82,7 +82,7 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
               <p className="text-sm mb-3" style={{ color: COLORS.text, fontWeight: 700 }}>Nueva programación</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+                  <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                     Nueva fecha <span style={{ color: COLORS.error }}>*</span>
                   </label>
                   <input
@@ -90,20 +90,20 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
                     min="2025-02-21"
-                    className="w-full px-3 py-2 rounded-lg outline-none"
-                    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                    className="w-full px-3 py-2.5 rounded-lg outline-none"
+                    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                   />
                 </div>
                 <div>
-                  <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+                  <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                     Nueva hora <span style={{ color: COLORS.error }}>*</span>
                   </label>
                   <div className="relative">
                     <select
                       value={newTime}
                       onChange={(e) => setNewTime(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg outline-none appearance-none"
-                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                      className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
+                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                     >
                       <option value="">Seleccionar...</option>
                       {TIME_SLOTS.map((s) => <option key={s}>{s}</option>)}
@@ -116,13 +116,13 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
 
             {/* Change doctor */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                 Cambiar médico (opcional)
               </label>
               <div className="relative">
                 <select
-                  className="w-full px-3 py-2 rounded-lg outline-none appearance-none"
-                  style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                  className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
+                  style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                 >
                   <option value="">Mantener médico actual</option>
                   {DOCTORS.filter((d) => d.status === 'Activo').map((d) => (
@@ -135,7 +135,7 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
 
             {/* Reason */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                 Motivo del cambio
               </label>
               <textarea
@@ -143,8 +143,8 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Ej: Paciente solicitó cambio por viaje de trabajo..."
-                className="w-full px-3 py-2 rounded-lg outline-none resize-none"
-                style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                className="w-full px-3 py-2.5 rounded-lg outline-none resize-none"
+                style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
               />
             </div>
 
@@ -153,9 +153,9 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
               <button
                 className="flex items-center gap-2 w-full text-left py-2"
                 onClick={() => setHistoryOpen(!historyOpen)}
-                style={{ color: COLORS.textLight, fontSize: 13, fontWeight: 600 }}
+                style={{ color: COLORS.textLight, fontSize: 14, fontWeight: 600 }}
               >
-                <Clock size={14} />
+                <Clock size={15} />
                 Historial de cambios
                 <ChevronDown size={14} className={`ml-auto transition-transform ${historyOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -264,12 +264,12 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
           <div className="p-5 max-h-[80vh] overflow-y-auto flex flex-col gap-5">
             {/* Patient search */}
             <div>
-              <label className="block mb-2" style={{ color: COLORS.text, fontSize: 13, fontWeight: 700 }}>
+              <label className="block mb-2" style={{ color: COLORS.text, fontSize: 14, fontWeight: 700 }}>
                 Buscar paciente existente
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
                   <input
                     type="text"
                     placeholder="Número de documento o nombre completo..."
@@ -277,13 +277,14 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     className="w-full pl-9 pr-3 py-2.5 rounded-lg outline-none"
-                    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                    aria-label="Buscar paciente por documento o nombre"
+                    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                   />
                 </div>
                 <button
                   onClick={handleSearch}
-                  className="px-4 py-2.5 rounded-lg text-white text-sm hover:opacity-90"
-                  style={{ background: COLORS.blue, fontWeight: 600 }}
+                  className="px-4 py-2.5 rounded-lg text-white hover:opacity-90"
+                  style={{ background: COLORS.blue, fontWeight: 600, fontSize: 14 }}
                 >
                   Buscar
                 </button>
@@ -314,7 +315,7 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                     { key: 'phone', label: 'Celular', placeholder: 'Ej: 310 234 5678', req: true },
                   ].map((field) => (
                     <div key={field.key}>
-                      <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+                      <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                         {field.label} {field.req && <span style={{ color: COLORS.error }}>*</span>}
                       </label>
                       <input
@@ -322,19 +323,19 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                         placeholder={field.placeholder}
                         value={form[field.key as keyof typeof form] as string}
                         onChange={(e) => setForm((f) => ({ ...f, [field.key]: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg outline-none"
-                        style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                        className="w-full px-3 py-2.5 rounded-lg outline-none"
+                        style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                       />
                     </div>
                   ))}
                   <div>
-                    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>Género</label>
+                    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Género</label>
                     <div className="relative">
                       <select
                         value={form.gender}
                         onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg outline-none appearance-none"
-                        style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                        className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
+                        style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                       >
                         <option value="">Seleccionar...</option>
                         <option>Masculino</option>
@@ -345,24 +346,24 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                     </div>
                   </div>
                   <div>
-                    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>Fecha de nacimiento</label>
+                    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Fecha de nacimiento</label>
                     <input
                       type="date"
                       value={form.birthDate}
                       onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg outline-none"
-                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                      className="w-full px-3 py-2.5 rounded-lg outline-none"
+                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                     />
                   </div>
                   <div>
-                    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>Edad (automática)</label>
+                    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Edad (automática)</label>
                     <input
                       type="text"
                       value={age ? `${age} años` : ''}
                       readOnly
                       placeholder="Se calcula automáticamente"
-                      className="w-full px-3 py-2 rounded-lg"
-                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.textLight, background: COLORS.grayLight, cursor: 'not-allowed' }}
+                      className="w-full px-3 py-2.5 rounded-lg"
+                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.textLight, background: COLORS.grayLight, cursor: 'not-allowed' }}
                     />
                   </div>
                 </div>
@@ -374,15 +375,15 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
               <p className="text-sm mb-3" style={{ color: COLORS.text, fontWeight: 700 }}>Detalles de la cita</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+                  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                     Médico/Terapista <span style={{ color: COLORS.error }}>*</span>
                   </label>
                   <div className="relative">
                     <select
                       value={form.doctor}
                       onChange={(e) => setForm((f) => ({ ...f, doctor: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg outline-none appearance-none"
-                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                      className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
+                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                     >
                       <option value="">Seleccionar...</option>
                       {DOCTORS.filter((d) => d.status === 'Activo').map((d) => (
@@ -393,27 +394,27 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                   </div>
                 </div>
                 <div>
-                  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+                  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                     Fecha <span style={{ color: COLORS.error }}>*</span>
                   </label>
                   <input
                     type="date"
                     value={form.date}
                     onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg outline-none"
-                    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                    className="w-full px-3 py-2.5 rounded-lg outline-none"
+                    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                   />
                 </div>
                 <div>
-                  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+                  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                     Hora <span style={{ color: COLORS.error }}>*</span>
                   </label>
                   <div className="relative">
                     <select
                       value={form.time}
                       onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg outline-none appearance-none"
-                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                      className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
+                      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                     >
                       <option value="">Seleccionar...</option>
                       {TIME_SLOTS.map((s) => <option key={s}>{s}</option>)}
@@ -426,23 +427,24 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
 
             {/* Observations */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>Observaciones</label>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Observaciones</label>
               <textarea
                 rows={2}
                 value={form.observations}
                 onChange={(e) => setForm((f) => ({ ...f, observations: e.target.value }))}
                 placeholder="Motivo de consulta, síntomas, información adicional..."
-                className="w-full px-3 py-2 rounded-lg outline-none resize-none"
-                style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                className="w-full px-3 py-2.5 rounded-lg outline-none resize-none"
+                style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
               />
-              <label className="flex items-center gap-2 mt-2 cursor-pointer">
+              <label className="flex items-center gap-2.5 mt-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={form.saveToHistory}
                   onChange={(e) => setForm((f) => ({ ...f, saveToHistory: e.target.checked }))}
+                  className="w-5 h-5"
                   style={{ accentColor: COLORS.blue }}
                 />
-                <span style={{ fontSize: 12, color: COLORS.textLight }}>Guardar observación en Historia Clínica</span>
+                <span style={{ fontSize: 14, color: COLORS.textLight }}>Guardar observación en Historia Clínica</span>
               </label>
             </div>
 
@@ -494,17 +496,17 @@ export default function DailyAgenda() {
         <div className="flex items-center gap-2">
           <button
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border hover:bg-gray-50 transition-colors"
-            style={{ borderColor: COLORS.border, color: COLORS.textLight, fontSize: 13, fontWeight: 600 }}
+            style={{ borderColor: COLORS.border, color: COLORS.textLight, fontSize: 14, fontWeight: 600 }}
           >
-            <Download size={15} />
+            <Download size={16} />
             Exportar CSV
           </button>
           <button
             onClick={() => setModal('new')}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white hover:opacity-90 transition-all shadow-md"
-            style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)`, fontSize: 13, fontWeight: 700 }}
+            style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)`, fontSize: 14, fontWeight: 700 }}
           >
-            <Plus size={16} />
+            <Plus size={18} />
             Nueva cita
           </button>
         </div>
@@ -513,24 +515,26 @@ export default function DailyAgenda() {
       {/* Filters */}
       <div className="rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3" style={{ background: COLORS.white, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
           <input
             type="text"
             placeholder="Buscar por paciente o documento..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 rounded-lg outline-none"
-            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+            aria-label="Buscar citas por paciente o documento"
+            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter size={14} style={{ color: COLORS.gray }} />
+          <Filter size={15} style={{ color: COLORS.gray }} />
           <div className="relative">
             <select
               value={filterDoctor}
               onChange={(e) => setFilterDoctor(e.target.value)}
               className="pl-3 pr-8 py-2.5 rounded-lg outline-none appearance-none"
-              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg, minWidth: 180 }}
+              aria-label="Filtrar por médico"
+              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg, minWidth: 180 }}
             >
               <option>Todos</option>
               {DOCTORS.filter((d) => d.status === 'Activo').map((d) => (
@@ -543,7 +547,8 @@ export default function DailyAgenda() {
             type="date"
             defaultValue="2025-02-20"
             className="px-3 py-2.5 rounded-lg outline-none"
-            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+            aria-label="Filtrar por fecha"
+            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
           />
         </div>
       </div>
@@ -558,7 +563,7 @@ export default function DailyAgenda() {
                   <th
                     key={col}
                     className="px-4 py-3 text-left"
-                    style={{ fontSize: 11, color: COLORS.gray, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}
+                    style={{ fontSize: 13, color: COLORS.gray, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}
                   >
                     {col}
                   </th>
@@ -573,31 +578,31 @@ export default function DailyAgenda() {
                   style={{ borderTop: `1px solid ${COLORS.border}` }}
                 >
                   <td className="px-4 py-3">
-                    <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.text }}>{appt.time}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>{appt.time}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-white flex-shrink-0"
-                        style={{ background: appt.color, fontSize: 10, fontWeight: 700 }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                        style={{ background: appt.color, fontSize: 11, fontWeight: 700 }}
                       >
                         {appt.patient.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                       </div>
-                      <span style={{ fontSize: 13, color: COLORS.text, fontWeight: 500, whiteSpace: 'nowrap' }}>{appt.patient}</span>
+                      <span style={{ fontSize: 14, color: COLORS.text, fontWeight: 500, whiteSpace: 'nowrap' }}>{appt.patient}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span style={{ fontSize: 12, color: COLORS.textLight, fontFamily: 'monospace' }}>{appt.document}</span>
+                    <span style={{ fontSize: 13, color: COLORS.textLight, fontFamily: 'monospace' }}>{appt.document}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span style={{ fontSize: 12, color: COLORS.textLight }}>{appt.phone}</span>
+                    <span style={{ fontSize: 13, color: COLORS.textLight }}>{appt.phone}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <p style={{ fontSize: 12, fontWeight: 600, color: COLORS.text }}>{appt.specialty}</p>
-                    <p style={{ fontSize: 11, color: COLORS.textLight }}>{appt.doctor.split(' ').slice(0, 3).join(' ')}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.text }}>{appt.specialty}</p>
+                    <p style={{ fontSize: 12, color: COLORS.textLight }}>{appt.doctor.split(' ').slice(0, 3).join(' ')}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span style={{ fontSize: 12, color: COLORS.textLight, maxWidth: 120, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 13, color: COLORS.textLight, maxWidth: 120, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {appt.observation || '—'}
                     </span>
                   </td>
@@ -618,25 +623,28 @@ export default function DailyAgenda() {
                     <div className="flex items-center gap-1">
                       <button
                         title="Ver detalles"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-blue-50 transition-colors"
+                        aria-label="Ver detalles de la cita"
+                        className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-blue-50 transition-colors"
                         style={{ color: COLORS.blue }}
                       >
-                        <Eye size={14} />
+                        <Eye size={16} />
                       </button>
                       <button
                         title="Re-agendar"
+                        aria-label="Re-agendar esta cita"
                         onClick={() => { setSelectedAppt(appt); setModal('reschedule'); }}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-orange-50 transition-colors"
+                        className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-orange-50 transition-colors"
                         style={{ color: COLORS.warning }}
                       >
-                        <Edit2 size={14} />
+                        <Edit2 size={16} />
                       </button>
                       <button
                         title="Exportar"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-green-50 transition-colors"
+                        aria-label="Exportar datos de la cita"
+                        className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-green-50 transition-colors"
                         style={{ color: COLORS.green }}
                       >
-                        <Download size={14} />
+                        <Download size={16} />
                       </button>
                     </div>
                   </td>
@@ -654,7 +662,7 @@ export default function DailyAgenda() {
         )}
 
         <div className="px-4 py-3 flex items-center justify-between" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-          <span style={{ fontSize: 12, color: COLORS.textLight }}>{filtered.length} citas encontradas</span>
+          <span style={{ fontSize: 13, color: COLORS.textLight }}>{filtered.length} citas encontradas</span>
           <button className="flex items-center gap-1.5 text-sm hover:text-blue-700 transition-colors" style={{ color: COLORS.blue, fontWeight: 600 }}>
             <RefreshCw size={13} />
             Actualizar

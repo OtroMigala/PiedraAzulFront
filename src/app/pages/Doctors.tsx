@@ -8,7 +8,7 @@ import { COLORS, DOCTORS } from '../data/mockData';
 const SPECIALTY_COLORS: Record<string, { bg: string; text: string }> = {
   'Terapia Neural': { bg: COLORS.blueLight, text: COLORS.blue },
   'Quiropraxia': { bg: COLORS.greenLight, text: COLORS.green },
-  'Fisioterapia': { bg: '#FFF3E0', text: '#F57C00' },
+  'Fisioterapia': { bg: '#FFF3E0', text: '#E65100' },
 };
 
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -68,7 +68,7 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
           <div className="p-5 flex flex-col gap-4 max-h-[80vh] overflow-y-auto">
             {/* Name */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                 Nombres completos <span style={{ color: COLORS.error }}>*</span>
               </label>
               <input
@@ -77,26 +77,26 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 className="w-full px-4 py-2.5 rounded-lg outline-none"
-                style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
               />
             </div>
 
             {/* Type */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>Tipo</label>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Tipo</label>
               <div className="flex gap-4">
                 {['Médico', 'Terapista'].map((type) => (
                   <label key={type} className="flex items-center gap-2 cursor-pointer">
                     <div
-                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
+                      className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
                       style={{ borderColor: form.type === type ? COLORS.blue : COLORS.border }}
                       onClick={() => setForm((f) => ({ ...f, type }))}
                     >
                       {form.type === type && (
-                        <div className="w-2 h-2 rounded-full" style={{ background: COLORS.blue }} />
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS.blue }} />
                       )}
                     </div>
-                    <span style={{ fontSize: 13, color: COLORS.text }}>{type}</span>
+                    <span style={{ fontSize: 14, color: COLORS.text }}>{type}</span>
                   </label>
                 ))}
               </div>
@@ -104,7 +104,7 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
 
             {/* Specialty */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                 Especialidad <span style={{ color: COLORS.error }}>*</span>
               </label>
               <div className="relative">
@@ -112,7 +112,7 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
                   value={form.specialty}
                   onChange={(e) => setForm((f) => ({ ...f, specialty: e.target.value }))}
                   className="w-full px-4 py-2.5 rounded-lg outline-none appearance-none"
-                  style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+                  style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                 >
                   <option value="">Seleccionar especialidad...</option>
                   <option>Terapia Neural</option>
@@ -125,7 +125,7 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
 
             {/* Interval */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                 Intervalo de atención
               </label>
               <div className="flex items-center gap-3">
@@ -139,18 +139,19 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
                   className="w-24 px-4 py-2.5 rounded-lg outline-none text-center"
                   style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg, fontWeight: 700 }}
                 />
-                <span style={{ color: COLORS.textLight, fontSize: 13 }}>minutos por cita</span>
+                <span style={{ color: COLORS.textLight, fontSize: 14 }}>minutos por cita</span>
               </div>
               <div className="flex gap-2 mt-2">
                 {[15, 20, 30, 45, 60].map((m) => (
                   <button
                     key={m}
                     onClick={() => setForm((f) => ({ ...f, interval: m }))}
-                    className="px-2.5 py-1 rounded-lg text-xs transition-all"
+                    className="px-2.5 py-1 rounded-lg transition-all"
                     style={{
                       background: form.interval === m ? COLORS.blue : COLORS.grayLight,
                       color: form.interval === m ? 'white' : COLORS.textLight,
                       fontWeight: 600,
+                      fontSize: 13,
                     }}
                   >
                     {m} min
@@ -162,8 +163,8 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
             {/* Status */}
             <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}>
               <div>
-                <p style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>Estado del profesional</p>
-                <p style={{ color: COLORS.textLight, fontSize: 11 }}>
+                <p style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Estado del profesional</p>
+                <p style={{ color: COLORS.textLight, fontSize: 12 }}>
                   {form.status ? 'Activo – disponible para citas' : 'Inactivo – no aparece en agendamiento'}
                 </p>
               </div>
@@ -181,7 +182,7 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
               <button
                 className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-gray-50 transition-colors"
                 onClick={() => setScheduleOpen(!scheduleOpen)}
-                style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text, fontSize: 13, fontWeight: 600 }}
+                style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text, fontSize: 14, fontWeight: 600 }}
               >
                 <div className="flex items-center gap-2">
                   <Clock size={15} style={{ color: COLORS.blue }} />
@@ -201,22 +202,22 @@ function DoctorFormModal({ doctor, onClose }: DoctorFormModalProps) {
                           onChange={(e) => setEnabledDays((d) => ({ ...d, [day]: e.target.checked }))}
                           style={{ accentColor: COLORS.blue }}
                         />
-                        <span style={{ fontSize: 12, color: COLORS.text, fontWeight: 500 }}>{day}</span>
+                        <span style={{ fontSize: 13, color: COLORS.text, fontWeight: 500 }}>{day}</span>
                       </label>
                       {enabledDays[day] && (
                         <div className="flex items-center gap-2">
                           <input
                             type="time"
                             defaultValue={doctor?.schedule?.[day]?.start || '07:00'}
-                            className="px-2 py-1 rounded outline-none"
-                            style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, background: COLORS.white }}
+                            className="px-2 py-1.5 rounded outline-none"
+                            style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, background: COLORS.white }}
                           />
-                          <span style={{ color: COLORS.gray, fontSize: 12 }}>–</span>
+                          <span style={{ color: COLORS.gray, fontSize: 13 }}>–</span>
                           <input
                             type="time"
                             defaultValue={doctor?.schedule?.[day]?.end || '13:00'}
-                            className="px-2 py-1 rounded outline-none"
-                            style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, background: COLORS.white }}
+                            className="px-2 py-1.5 rounded outline-none"
+                            style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, background: COLORS.white }}
                           />
                         </div>
                       )}
@@ -286,24 +287,26 @@ export default function Doctors() {
       {/* Filters */}
       <div className="rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3" style={{ background: COLORS.white, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
           <input
             type="text"
             placeholder="Buscar por nombre..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 rounded-lg outline-none"
-            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+            aria-label="Buscar profesional por nombre"
+            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter size={14} style={{ color: COLORS.gray }} />
+          <Filter size={15} style={{ color: COLORS.gray }} />
           <div className="relative">
             <select
               value={filterSpecialty}
               onChange={(e) => setFilterSpecialty(e.target.value)}
               className="pl-3 pr-7 py-2.5 rounded-lg outline-none appearance-none"
-              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg, minWidth: 150 }}
+              aria-label="Filtrar por especialidad"
+              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg, minWidth: 150 }}
             >
               <option>Todas</option>
               <option>Terapia Neural</option>
@@ -317,7 +320,8 @@ export default function Doctors() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="pl-3 pr-7 py-2.5 rounded-lg outline-none appearance-none"
-              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg, minWidth: 110 }}
+              aria-label="Filtrar por estado"
+              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg, minWidth: 110 }}
             >
               <option>Todos</option>
               <option>Activo</option>
@@ -338,7 +342,7 @@ export default function Doctors() {
                   <th
                     key={col}
                     className="px-5 py-3 text-left"
-                    style={{ fontSize: 11, color: COLORS.gray, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}
+                    style={{ fontSize: 13, color: COLORS.gray, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}
                   >
                     {col}
                   </th>
@@ -362,7 +366,7 @@ export default function Doctors() {
                         </div>
                         <div>
                           <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>{doctor.name}</p>
-                          <p style={{ fontSize: 11, color: COLORS.textLight }}>
+                          <p style={{ fontSize: 12, color: COLORS.textLight }}>
                             Disponible: {doctor.nextAvailable}
                           </p>
                         </div>
@@ -415,28 +419,31 @@ export default function Doctors() {
                       <div className="flex items-center gap-1">
                         <button
                           title="Ver perfil"
-                          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-blue-50 transition-colors"
+                          aria-label="Ver perfil del profesional"
+                          className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-blue-50 transition-colors"
                           style={{ color: COLORS.blue }}
                         >
-                          <Eye size={15} />
+                          <Eye size={16} />
                         </button>
                         <button
                           title="Editar"
+                          aria-label="Editar profesional"
                           onClick={() => { setEditDoctor(doctor); setModal(true); }}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-orange-50 transition-colors"
+                          className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-orange-50 transition-colors"
                           style={{ color: COLORS.warning }}
                         >
-                          <Edit2 size={15} />
+                          <Edit2 size={16} />
                         </button>
                         <button
                           title={doctor.status === 'Activo' ? 'Desactivar' : 'Activar'}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                          aria-label={doctor.status === 'Activo' ? 'Desactivar profesional' : 'Activar profesional'}
+                          className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
                           style={{
                             color: doctor.status === 'Activo' ? COLORS.error : COLORS.green,
                             background: doctor.status === 'Activo' ? COLORS.errorLight : COLORS.greenLight,
                           }}
                         >
-                          {doctor.status === 'Activo' ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
+                          {doctor.status === 'Activo' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                         </button>
                       </div>
                     </td>

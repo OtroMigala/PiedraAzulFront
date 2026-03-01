@@ -6,13 +6,13 @@ export const COLORS = {
   greenLight: '#E8F5E9',
   bg: '#F4F6F8',
   text: '#2C3E50',
-  textLight: '#546E7A',
+  textLight: '#455A64',
   error: '#D32F2F',
   errorLight: '#FFEBEE',
-  warning: '#F57C00',
+  warning: '#E65100',
   warningLight: '#FFF3E0',
   white: '#FFFFFF',
-  gray: '#90A4AE',
+  gray: '#607D8B',
   grayLight: '#ECEFF1',
   border: '#CFD8DC',
 };
@@ -160,7 +160,7 @@ export const SPECIALTIES = [
   {
     id: 'neural',
     name: 'Terapia Neural',
-    description: 'Tratamiento del sistema nervioso autónomo mediante microinyecciones de anestésico local en zonas de interferencia.',
+    description: 'Tratamiento para aliviar dolores crónicos de cabeza, espalda y nervios, mediante pequeñas aplicaciones localizadas.',
     icon: 'Brain',
     color: '#1E88E5',
     bgColor: '#E3F2FD',
@@ -168,7 +168,7 @@ export const SPECIALTIES = [
   {
     id: 'quiro',
     name: 'Quiropraxia',
-    description: 'Diagnóstico y tratamiento de trastornos del sistema músculo-esquelético, especialmente la columna vertebral.',
+    description: 'Cuidado de la columna vertebral y articulaciones para mejorar tu movilidad y reducir el dolor.',
     icon: 'Bone',
     color: '#2E7D32',
     bgColor: '#E8F5E9',
@@ -176,9 +176,9 @@ export const SPECIALTIES = [
   {
     id: 'fisio',
     name: 'Fisioterapia',
-    description: 'Rehabilitación física mediante ejercicios terapéuticos, masajes y técnicas especializadas de recuperación funcional.',
+    description: 'Ejercicios guiados y masajes para recuperar fuerza, movilidad y bienestar después de una lesión o cirugía.',
     icon: 'Activity',
-    color: '#F57C00',
+    color: '#E65100',
     bgColor: '#FFF3E0',
   },
 ];

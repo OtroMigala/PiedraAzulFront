@@ -15,7 +15,7 @@ const SPECIALTY_ICONS: Record<string, React.ReactNode> = {
 const SPECIALTY_COLORS: Record<string, { bg: string; text: string }> = {
   'Terapia Neural': { bg: COLORS.blueLight, text: COLORS.blue },
   'Quiropraxia': { bg: COLORS.greenLight, text: COLORS.green },
-  'Fisioterapia': { bg: '#FFF3E0', text: '#F57C00' },
+  'Fisioterapia': { bg: '#FFF3E0', text: '#E65100' },
 };
 
 interface AddControlModalProps {
@@ -56,14 +56,14 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
               <Check size={32} style={{ color: COLORS.green }} />
             </div>
             <p className="text-lg" style={{ color: COLORS.green, fontWeight: 700 }}>¡Control registrado!</p>
-            <p style={{ color: COLORS.textLight, fontSize: 13, marginTop: 4 }}>El registro ha sido guardado de forma permanente</p>
+            <p style={{ color: COLORS.textLight, fontSize: 14, marginTop: 4 }}>El registro ha sido guardado de forma permanente</p>
           </div>
         ) : (
           <div className="p-5 flex flex-col gap-4">
             {/* Read-only info */}
             <div className="rounded-xl p-4" style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }}>
               <p className="text-xs mb-3" style={{ color: COLORS.gray, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>
-                Información de la cita (read-only)
+                Información de la cita (solo lectura)
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -73,8 +73,8 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
                   { label: 'Especialidad', value: 'Terapia Neural' },
                 ].map((item) => (
                   <div key={item.label}>
-                    <p style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, textTransform: 'uppercase' }}>{item.label}</p>
-                    <p style={{ fontSize: 13, color: COLORS.text, fontWeight: 600 }}>{item.value}</p>
+                    <p style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600, textTransform: 'uppercase' }}>{item.label}</p>
+                    <p style={{ fontSize: 14, color: COLORS.text, fontWeight: 600 }}>{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -82,7 +82,7 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
 
             {/* Description */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
+              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
                 Descripción del procedimiento <span style={{ color: COLORS.error }}>*</span>
               </label>
               <textarea
@@ -93,7 +93,7 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
                 className="w-full px-4 py-3 rounded-xl outline-none resize-none transition-all"
                 style={{
                   border: `1.5px solid ${isValid ? COLORS.green : charCount > 0 ? COLORS.border : COLORS.border}`,
-                  fontSize: 13,
+                  fontSize: 14,
                   color: COLORS.text,
                   background: COLORS.bg,
                   lineHeight: 1.6,
@@ -104,17 +104,17 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
               <div className="flex items-center justify-between mt-1.5">
                 <div>
                   {charCount > 0 && charCount < MIN_CHARS && (
-                    <p style={{ fontSize: 11, color: COLORS.warning }}>
+                    <p style={{ fontSize: 13, color: COLORS.warning }}>
                       Mínimo {MIN_CHARS} caracteres ({MIN_CHARS - charCount} restantes)
                     </p>
                   )}
                   {isValid && (
-                    <p className="flex items-center gap-1" style={{ fontSize: 11, color: COLORS.green }}>
-                      <Check size={10} /> Descripción válida
+                    <p className="flex items-center gap-1" style={{ fontSize: 13, color: COLORS.green }}>
+                      <Check size={12} /> Descripción válida
                     </p>
                   )}
                 </div>
-                <span style={{ fontSize: 11, color: isValid ? COLORS.green : COLORS.gray, fontWeight: 600 }}>
+                <span style={{ fontSize: 12, color: isValid ? COLORS.green : COLORS.gray, fontWeight: 600 }}>
                   {charCount} caracteres
                 </span>
               </div>
@@ -124,8 +124,8 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
             <div className="flex items-start gap-3 p-4 rounded-xl" style={{ background: '#FFF3E0', border: `1px solid #FFCC80` }}>
               <AlertTriangle size={18} style={{ color: COLORS.warning, flexShrink: 0, marginTop: 1 }} />
               <div>
-                <p style={{ color: '#E65100', fontWeight: 700, fontSize: 13 }}>Registro inmutable</p>
-                <p style={{ color: '#5D4037', fontSize: 12, lineHeight: 1.5 }}>
+                <p style={{ color: '#E65100', fontWeight: 700, fontSize: 14 }}>Una vez guardado, no se puede cambiar</p>
+                <p style={{ color: '#5D4037', fontSize: 13, lineHeight: 1.5 }}>
                   Este registro <strong>no podrá modificarse</strong> una vez guardado. Asegúrate de que la información sea correcta y completa antes de continuar.
                 </p>
               </div>
@@ -133,8 +133,8 @@ function AddControlModal({ patient, onClose }: AddControlModalProps) {
 
             {/* Security badge */}
             <div className="flex items-center gap-2 justify-center py-2" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-              <Lock size={12} style={{ color: COLORS.gray }} />
-              <span style={{ fontSize: 11, color: COLORS.gray }}>Historia clínica protegida · Acceso solo para profesionales autorizados</span>
+              <Lock size={13} style={{ color: COLORS.gray }} />
+              <span style={{ fontSize: 12, color: COLORS.gray }}>Historia clínica protegida · Acceso solo para profesionales autorizados</span>
             </div>
 
             {/* Buttons */}
@@ -181,8 +181,8 @@ export default function MedicalHistory() {
       {/* Security banner */}
       <div className="flex items-center gap-3 p-3 rounded-xl mb-6" style={{ background: '#E3F2FD', border: `1px solid ${COLORS.blue}30` }}>
         <Lock size={16} style={{ color: COLORS.blue }} />
-        <p style={{ fontSize: 12, color: COLORS.blue, fontWeight: 600 }}>
-          Historia Clínica – Acceso restringido solo a Médicos y Terapistas autorizados. Los registros son inmutables y auditables.
+        <p style={{ fontSize: 13, color: COLORS.blue, fontWeight: 600 }}>
+          Historia Clínica – Acceso restringido solo a Médicos y Terapistas autorizados. Los registros no se pueden modificar una vez guardados.
         </p>
       </div>
 
@@ -191,19 +191,20 @@ export default function MedicalHistory() {
         <h2 className="text-base mb-3" style={{ color: COLORS.text, fontWeight: 700 }}>Buscar paciente</h2>
         <div className="flex gap-2">
           <div className="relative flex-1 max-w-md">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
             <input
               type="text"
               placeholder="Nombre o número de documento..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2.5 rounded-lg outline-none"
-              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+              aria-label="Buscar paciente por nombre o documento"
+              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
             />
           </div>
           <button
-            className="px-4 py-2.5 rounded-lg text-white text-sm hover:opacity-90"
-            style={{ background: COLORS.blue, fontWeight: 600 }}
+            className="px-4 py-2.5 rounded-lg text-white hover:opacity-90"
+            style={{ background: COLORS.blue, fontWeight: 600, fontSize: 14 }}
           >
             Buscar
           </button>
@@ -215,16 +216,16 @@ export default function MedicalHistory() {
             <button
               key={p.id}
               onClick={() => setSelectedPatient(p)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all"
+              className="flex items-center gap-2 px-3 py-2 rounded-full border transition-all"
               style={{
                 borderColor: selectedPatient.id === p.id ? COLORS.blue : COLORS.border,
                 background: selectedPatient.id === p.id ? COLORS.blueLight : COLORS.white,
                 color: selectedPatient.id === p.id ? COLORS.blue : COLORS.textLight,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: selectedPatient.id === p.id ? 700 : 400,
               }}
             >
-              <User size={12} />
+              <User size={13} />
               {p.name}
             </button>
           ))}
@@ -256,10 +257,10 @@ export default function MedicalHistory() {
                 { label: 'Total controles', value: `${MEDICAL_HISTORY.length} registros` },
               ].map((item) => (
                 <div key={item.label} className="flex flex-col">
-                  <span style={{ fontSize: 10, color: COLORS.gray, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: 11, color: COLORS.gray, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>
                     {item.label}
                   </span>
-                  <span style={{ fontSize: 13, color: COLORS.text, fontWeight: 600 }}>{item.value}</span>
+                  <span style={{ fontSize: 14, color: COLORS.text, fontWeight: 600 }}>{item.value}</span>
                 </div>
               ))}
             </div>
@@ -269,7 +270,7 @@ export default function MedicalHistory() {
               <button
                 onClick={() => setShowModal(true)}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white hover:opacity-90 transition-all"
-                style={{ background: COLORS.green, fontSize: 13, fontWeight: 700 }}
+                style={{ background: COLORS.green, fontSize: 14, fontWeight: 700 }}
               >
                 <Plus size={16} />
                 Agregar control médico
@@ -287,13 +288,14 @@ export default function MedicalHistory() {
                 Historial de controles médicos
               </h2>
               <div className="flex items-center gap-2">
-                <Filter size={14} style={{ color: COLORS.gray }} />
+                <Filter size={15} style={{ color: COLORS.gray }} />
                 <div className="relative">
                   <select
                     value={filterSpecialty}
                     onChange={(e) => setFilterSpecialty(e.target.value)}
-                    className="pl-3 pr-7 py-1.5 rounded-lg outline-none appearance-none"
-                    style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, color: COLORS.text, background: COLORS.bg }}
+                    className="pl-3 pr-7 py-2 rounded-lg outline-none appearance-none"
+                    aria-label="Filtrar por especialidad"
+                    style={{ border: `1px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                   >
                     <option>Todas</option>
                     <option>Terapia Neural</option>
@@ -333,25 +335,25 @@ export default function MedicalHistory() {
                       <div className="flex items-start justify-between flex-wrap gap-2 mb-3">
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.text }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>
                               {date.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                             <span style={{ fontSize: 12, color: COLORS.gray }}>·</span>
-                            <span style={{ fontSize: 12, color: COLORS.textLight }}>
+                            <span style={{ fontSize: 13, color: COLORS.textLight }}>
                               {date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1">
-                            <User size={11} style={{ color: COLORS.gray }} />
-                            <span style={{ fontSize: 12, color: COLORS.textLight }}>{entry.doctor}</span>
+                            <User size={12} style={{ color: COLORS.gray }} />
+                            <span style={{ fontSize: 13, color: COLORS.textLight }}>{entry.doctor}</span>
                           </div>
                         </div>
                         <div className="flex gap-1.5 flex-wrap">
                           {entry.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-                              style={{ background: spColors.bg, color: spColors.text, fontWeight: 600 }}
+                              className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                              style={{ background: spColors.bg, color: spColors.text, fontWeight: 600, fontSize: 13 }}
                             >
                               <Tag size={9} />
                               {tag}
@@ -360,12 +362,12 @@ export default function MedicalHistory() {
                         </div>
                       </div>
 
-                      <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6 }}>{entry.procedure}</p>
+                      <p style={{ fontSize: 14, color: COLORS.text, lineHeight: 1.6 }}>{entry.procedure}</p>
 
                       {/* Immutable badge */}
                       <div className="flex items-center gap-1.5 mt-3 pt-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-                        <Lock size={11} style={{ color: COLORS.gray }} />
-                        <span style={{ fontSize: 10, color: COLORS.gray }}>Registro inmutable · No puede modificarse</span>
+                        <Lock size={12} style={{ color: COLORS.gray }} />
+                        <span style={{ fontSize: 12, color: COLORS.gray }}>Una vez guardado, no se puede modificar</span>
                       </div>
                     </div>
                   </div>

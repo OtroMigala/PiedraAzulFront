@@ -53,7 +53,7 @@ export default function Login() {
               <span className="text-white text-2xl" style={{ fontWeight: 800 }}>P</span>
             </div>
             <h1 className="text-2xl" style={{ color: COLORS.text, fontWeight: 700 }}>Piedrazul</h1>
-            <p style={{ color: COLORS.textLight, fontSize: 13 }}>Centro Médico de Medicina Alternativa</p>
+            <p style={{ color: COLORS.textLight, fontSize: 15 }}>Centro Médico de Medicina Alternativa</p>
           </div>
 
           {/* Title */}
@@ -64,32 +64,34 @@ export default function Login() {
           {/* Error */}
           {error && (
             <div className="flex items-center gap-2 rounded-lg px-4 py-3 mb-4" style={{ background: COLORS.errorLight, color: COLORS.error }}>
-              <AlertCircle size={16} />
-              <span style={{ fontSize: 13 }}>{error}</span>
+              <AlertCircle size={18} />
+              <span style={{ fontSize: 15 }}>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Email */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
-                Usuario o correo electrónico
+              <label className="block mb-2" style={{ color: COLORS.text, fontSize: 15, fontWeight: 600 }}>
+                Usuario, correo o documento
               </label>
               <div className="relative">
                 <User
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  size={18}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
                   style={{ color: COLORS.gray }}
+                  aria-hidden="true"
                 />
                 <input
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="usuario@piedrazul.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg outline-none transition-all"
+                  placeholder="usuario@piedrazul.com o N° documento"
+                  aria-label="Usuario, correo electrónico o número de documento"
+                  className="w-full pl-11 pr-4 py-3 rounded-lg outline-none transition-all"
                   style={{
                     border: `1.5px solid ${COLORS.border}`,
-                    fontSize: 14,
+                    fontSize: 16,
                     color: COLORS.text,
                     background: COLORS.bg,
                   }}
@@ -101,24 +103,26 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>
+              <label className="block mb-2" style={{ color: COLORS.text, fontSize: 15, fontWeight: 600 }}>
                 Contraseña
               </label>
               <div className="relative">
                 <Lock
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  size={18}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
                   style={{ color: COLORS.gray }}
+                  aria-hidden="true"
                 />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-lg outline-none transition-all"
+                  aria-label="Contraseña"
+                  className="w-full pl-11 pr-12 py-3 rounded-lg outline-none transition-all"
                   style={{
                     border: `1.5px solid ${COLORS.border}`,
-                    fontSize: 14,
+                    fontSize: 16,
                     color: COLORS.text,
                     background: COLORS.bg,
                   }}
@@ -128,27 +132,28 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
                   style={{ color: COLORS.gray }}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
             {/* Remember + Forgot */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2.5 cursor-pointer py-1">
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="rounded"
+                  className="rounded w-5 h-5"
                   style={{ accentColor: COLORS.blue }}
                 />
-                <span style={{ color: COLORS.textLight, fontSize: 13 }}>Recordarme</span>
+                <span style={{ color: COLORS.textLight, fontSize: 15 }}>Recordarme</span>
               </label>
-              <button type="button" className="text-sm hover:underline" style={{ color: COLORS.blue, fontSize: 13 }}>
+              <button type="button" className="text-sm hover:underline py-1" style={{ color: COLORS.blue, fontSize: 15 }}>
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
@@ -157,11 +162,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-lg text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-70 mt-1"
+              className="w-full py-3.5 rounded-xl text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-70 mt-2"
               style={{
                 background: loading ? COLORS.gray : `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)`,
-                fontWeight: 600,
-                fontSize: 15,
+                fontWeight: 700,
+                fontSize: 16,
               }}
             >
               {loading ? (
@@ -185,16 +190,16 @@ export default function Login() {
           {/* Patient scheduling */}
           <button
             onClick={() => navigate('/schedule')}
-            className="w-full py-2.5 rounded-lg transition-all hover:bg-blue-50 border"
-            style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 14, fontWeight: 500 }}
+            className="w-full py-3 rounded-xl transition-all hover:bg-blue-50 border"
+            style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 15, fontWeight: 600 }}
           >
             Agendar cita como paciente →
           </button>
 
           {/* Security badge */}
           <div className="flex items-center justify-center gap-1.5 mt-5">
-            <Shield size={12} style={{ color: COLORS.gray }} />
-            <span style={{ color: COLORS.gray, fontSize: 11 }}>Conexión segura SSL – Datos protegidos</span>
+            <Shield size={14} style={{ color: COLORS.gray }} aria-hidden="true" />
+            <span style={{ color: COLORS.gray, fontSize: 13 }}>Conexión segura SSL – Datos protegidos</span>
           </div>
         </div>
 

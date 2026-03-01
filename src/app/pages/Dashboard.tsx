@@ -9,14 +9,14 @@ import { COLORS, APPOINTMENTS_TODAY, DOCTORS } from '../data/mockData';
 const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   Confirmada: { bg: '#E3F2FD', text: COLORS.blue, dot: COLORS.blue },
   Completada: { bg: COLORS.greenLight, text: COLORS.green, dot: COLORS.green },
-  Pendiente: { bg: '#FFF3E0', text: '#F57C00', dot: '#F57C00' },
+  Pendiente: { bg: '#FFF3E0', text: '#E65100', dot: '#E65100' },
   Cancelada: { bg: COLORS.errorLight, text: COLORS.error, dot: COLORS.error },
 };
 
 const STAT_CARDS = [
   { label: 'Citas hoy', value: 7, change: '+2 vs ayer', icon: <Calendar size={22} />, color: COLORS.blue, bg: COLORS.blueLight },
   { label: 'Completadas', value: 1, change: '14%', icon: <CheckCircle size={22} />, color: COLORS.green, bg: COLORS.greenLight },
-  { label: 'Pendientes', value: 6, change: '86%', icon: <Clock size={22} />, color: '#F57C00', bg: '#FFF3E0' },
+  { label: 'Pendientes', value: 6, change: '86%', icon: <Clock size={22} />, color: '#E65100', bg: '#FFF3E0' },
   { label: 'Profesionales activos', value: 3, change: 'de 4 totales', icon: <Users size={22} />, color: '#9C27B0', bg: '#F3E5F5' },
 ];
 
@@ -88,16 +88,18 @@ export default function Dashboard() {
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="pl-3 pr-8 py-1.5 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: COLORS.border, color: COLORS.text, fontSize: 12 }}
+                    className="pl-3 pr-8 py-2 rounded-lg border text-sm outline-none"
+                    style={{ borderColor: COLORS.border, color: COLORS.text, fontSize: 14 }}
+                    aria-label="Fecha de la agenda"
                   />
                 </div>
                 <div className="relative">
                   <select
                     value={selectedDoctor}
                     onChange={(e) => setSelectedDoctor(e.target.value)}
-                    className="pl-3 pr-7 py-1.5 rounded-lg border text-sm outline-none appearance-none"
-                    style={{ borderColor: COLORS.border, color: COLORS.text, fontSize: 12, background: COLORS.white }}
+                    className="pl-3 pr-7 py-2 rounded-lg border text-sm outline-none appearance-none"
+                    style={{ borderColor: COLORS.border, color: COLORS.text, fontSize: 14, background: COLORS.white }}
+                    aria-label="Filtrar por médico"
                   >
                     <option>Todos</option>
                     {DOCTORS.filter((d) => d.status === 'Activo').map((d) => (
@@ -106,8 +108,8 @@ export default function Dashboard() {
                   </select>
                   <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: COLORS.gray }} />
                 </div>
-                <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors" style={{ color: COLORS.gray }}>
-                  <RefreshCw size={14} />
+                <button className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors" style={{ color: COLORS.gray }} aria-label="Refrescar">
+                  <RefreshCw size={16} />
                 </button>
               </div>
             </div>
@@ -120,7 +122,7 @@ export default function Dashboard() {
                   return (
                     <div key={hour} className="flex items-stretch gap-3 min-h-[52px]">
                       <div className="w-14 flex-shrink-0 flex items-start pt-1">
-                        <span style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600 }}>{hour}</span>
+                      <span style={{ fontSize: 13, color: COLORS.gray, fontWeight: 600 }}>{hour}</span>
                       </div>
                       <div className="w-px flex-shrink-0" style={{ background: COLORS.border }} />
                       <div className="flex-1">
@@ -133,7 +135,7 @@ export default function Dashboard() {
                             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: appt.color }} />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm truncate" style={{ color: COLORS.text, fontWeight: 600 }}>{appt.patient}</p>
-                              <p style={{ fontSize: 11, color: COLORS.textLight }}>{appt.specialty} · {appt.doctor.split(' ').slice(-1)[0]}</p>
+                              <p style={{ fontSize: 12, color: COLORS.textLight }}>{appt.specialty} · {appt.doctor.split(' ').slice(-1)[0]}</p>
                             </div>
                             <span
                               className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
@@ -187,7 +189,7 @@ export default function Dashboard() {
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm truncate" style={{ color: COLORS.text, fontWeight: 600 }}>{doctor.name}</p>
-                      <p style={{ fontSize: 11, color: COLORS.textLight }}>{doctorAppts.length} citas · {completed} completadas</p>
+                      <p style={{ fontSize: 12, color: COLORS.textLight }}>{doctorAppts.length} citas · {completed} completadas</p>
                       <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ background: COLORS.grayLight }}>
                         <div
                           className="h-full rounded-full transition-all"
@@ -206,9 +208,9 @@ export default function Dashboard() {
             <h3 className="text-sm mb-4" style={{ color: COLORS.text, fontWeight: 700 }}>Acciones rápidas</h3>
             <div className="flex flex-col gap-2">
               {[
-                { label: 'Nueva cita manual', icon: <Plus size={16} />, path: '/agenda', color: COLORS.blue, bg: COLORS.blueLight },
-                { label: 'Ver agenda completa', icon: <Calendar size={16} />, path: '/agenda', color: COLORS.green, bg: COLORS.greenLight },
-                { label: 'Gestionar médicos', icon: <Users size={16} />, path: '/doctors', color: '#9C27B0', bg: '#F3E5F5' },
+                { label: 'Nueva cita manual', icon: <Plus size={18} />, path: '/agenda', color: COLORS.blue, bg: COLORS.blueLight },
+                { label: 'Ver agenda completa', icon: <Calendar size={18} />, path: '/agenda', color: COLORS.green, bg: COLORS.greenLight },
+                { label: 'Gestionar médicos', icon: <Users size={18} />, path: '/doctors', color: '#9C27B0', bg: '#F3E5F5' },
               ].map((action) => (
                 <button
                   key={action.label}
@@ -216,10 +218,10 @@ export default function Dashboard() {
                   className="flex items-center gap-3 p-3 rounded-xl hover:opacity-90 transition-all"
                   style={{ background: action.bg }}
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: action.color, color: 'white' }}>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: action.color, color: 'white' }}>
                     {action.icon}
                   </div>
-                  <span style={{ fontSize: 13, color: action.color, fontWeight: 600 }}>{action.label}</span>
+                  <span style={{ fontSize: 14, color: action.color, fontWeight: 600 }}>{action.label}</span>
                 </button>
               ))}
             </div>
@@ -229,13 +231,13 @@ export default function Dashboard() {
           <div className="rounded-2xl p-5" style={{ background: COLORS.white, boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
             <h3 className="text-sm mb-3" style={{ color: COLORS.text, fontWeight: 700 }}>Alertas recientes</h3>
             <div className="flex flex-col gap-2">
-              <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: COLORS.warningLight }}>
-                <AlertCircle size={14} style={{ color: COLORS.warning, flexShrink: 0, marginTop: 1 }} />
-                <p style={{ fontSize: 11, color: '#5D4037' }}>Valentina Ospina tiene cita en 30 min – sin confirmar</p>
+              <div className="flex items-start gap-2 p-2.5 rounded-lg" style={{ background: COLORS.warningLight }}>
+                <AlertCircle size={16} style={{ color: COLORS.warning, flexShrink: 0, marginTop: 1 }} />
+                <p style={{ fontSize: 13, color: '#5D4037' }}>Valentina Ospina tiene cita en 30 min – sin confirmar</p>
               </div>
-              <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: COLORS.blueLight }}>
-                <AlertCircle size={14} style={{ color: COLORS.blue, flexShrink: 0, marginTop: 1 }} />
-                <p style={{ fontSize: 11, color: COLORS.text }}>2 nuevas citas autónomas agendadas hoy</p>
+              <div className="flex items-start gap-2 p-2.5 rounded-lg" style={{ background: COLORS.blueLight }}>
+                <AlertCircle size={16} style={{ color: COLORS.blue, flexShrink: 0, marginTop: 1 }} />
+                <p style={{ fontSize: 13, color: COLORS.text }}>2 nuevas citas autónomas agendadas hoy</p>
               </div>
             </div>
           </div>

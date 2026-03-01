@@ -17,27 +17,27 @@ interface SidebarProps {
 
 const ROLE_MENUS: Record<Role, { label: string; icon: React.ReactNode; path: string }[]> = {
   admin: [
-    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/dashboard' },
-    { label: 'Agendar Cita', icon: <Calendar size={18} />, path: '/schedule' },
-    { label: 'Agenda Diaria', icon: <ClipboardList size={18} />, path: '/agenda' },
-    { label: 'Médicos/Terapistas', icon: <UserCheck size={18} />, path: '/doctors' },
-    { label: 'Historial Clínico', icon: <FileText size={18} />, path: '/history' },
-    { label: 'Auditoría', icon: <Shield size={18} />, path: '/audit' },
-    { label: 'Reportes', icon: <BarChart2 size={18} />, path: '/reports' },
+    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
+    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/schedule' },
+    { label: 'Agenda Diaria', icon: <ClipboardList size={20} />, path: '/agenda' },
+    { label: 'Médicos/Terapistas', icon: <UserCheck size={20} />, path: '/doctors' },
+    { label: 'Historial Clínico', icon: <FileText size={20} />, path: '/history' },
+    { label: 'Auditoría', icon: <Shield size={20} />, path: '/audit' },
+    { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/reports' },
   ],
   doctor: [
-    { label: 'Mis Citas', icon: <Calendar size={18} />, path: '/agenda' },
-    { label: 'Historia Clínica', icon: <FileText size={18} />, path: '/history' },
-    { label: 'Reportes', icon: <BarChart2 size={18} />, path: '/reports' },
+    { label: 'Mis Citas', icon: <Calendar size={20} />, path: '/agenda' },
+    { label: 'Historia Clínica', icon: <FileText size={20} />, path: '/history' },
+    { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/reports' },
   ],
   scheduler: [
-    { label: 'Agendar Cita', icon: <Calendar size={18} />, path: '/schedule' },
-    { label: 'Agenda del Día', icon: <ClipboardList size={18} />, path: '/agenda' },
-    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/dashboard' },
+    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/schedule' },
+    { label: 'Agenda del Día', icon: <ClipboardList size={20} />, path: '/agenda' },
+    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
   ],
   patient: [
-    { label: 'Agendar Cita', icon: <Calendar size={18} />, path: '/schedule' },
-    { label: 'Mis Citas', icon: <ClipboardList size={18} />, path: '/agenda' },
+    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/schedule' },
+    { label: 'Mis Citas', icon: <ClipboardList size={20} />, path: '/agenda' },
   ],
 };
 
@@ -86,12 +86,12 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid rgba(255,255,255,0.1)` }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: COLORS.blue }}>
-              <span className="text-white text-sm" style={{ fontWeight: 700 }}>P</span>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: COLORS.blue }}>
+              <span className="text-white text-base" style={{ fontWeight: 700 }}>P</span>
             </div>
             <div>
               <div className="text-white text-sm" style={{ fontWeight: 700, letterSpacing: '0.5px' }}>Piedrazul</div>
-              <div style={{ color: COLORS.gray, fontSize: 11 }}>Centro Médico</div>
+              <div style={{ color: COLORS.gray, fontSize: 12 }}>Centro Médico</div>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden text-white/60 hover:text-white">
@@ -105,9 +105,9 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
             className="w-full flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-white/10 transition-colors"
             onClick={() => setShowRoleMenu(!showRoleMenu)}
           >
-            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ background: ROLE_BADGE_COLORS[role] }}>
-              <span className="text-white text-xs" style={{ fontWeight: 700 }}>
+              <span className="text-white text-sm" style={{ fontWeight: 700 }}>
                 {ROLE_LABELS[role].substring(0, 2).toUpperCase()}
               </span>
             </div>
@@ -125,10 +125,10 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
               {(['admin', 'doctor', 'scheduler', 'patient'] as Role[]).map((r) => (
                 <button
                   key={r}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/10 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-white/10 transition-colors"
                   onClick={() => { onRoleChange(r); setShowRoleMenu(false); }}
                 >
-                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ROLE_BADGE_COLORS[r] }} />
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: ROLE_BADGE_COLORS[r] }} />
                   <span className="text-sm" style={{ color: r === role ? 'white' : 'rgba(255,255,255,0.6)' }}>
                     {ROLE_BADGE_LABELS[r]} – {ROLE_LABELS[r]}
                   </span>
@@ -140,7 +140,7 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 overflow-y-auto">
-          <div style={{ color: COLORS.gray, fontSize: 10, fontWeight: 700, letterSpacing: '1px', paddingLeft: 8, marginBottom: 8, textTransform: 'uppercase' }}>
+          <div style={{ color: COLORS.gray, fontSize: 11, fontWeight: 700, letterSpacing: '1px', paddingLeft: 8, marginBottom: 8, textTransform: 'uppercase' }}>
             Menú Principal
           </div>
           <ul className="flex flex-col gap-1">
@@ -150,7 +150,7 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
                   to={item.path}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${
+                    `flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-sm ${
                       isActive
                         ? 'text-white'
                         : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -170,9 +170,9 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
         <div className="px-3 py-4" style={{ borderTop: `1px solid rgba(255,255,255,0.1)` }}>
           <NavLink
             to="/login"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all"
           >
-            <LogOut size={18} />
+            <LogOut size={20} />
             Cerrar sesión
           </NavLink>
         </div>
@@ -190,12 +190,12 @@ export function Topbar({ onMenuClick, pageTitle }: TopbarProps) {
   return (
     <header className="flex items-center gap-4 px-4 py-3 lg:hidden sticky top-0 z-30"
       style={{ background: COLORS.text, borderBottom: `1px solid rgba(255,255,255,0.1)` }}>
-      <button onClick={onMenuClick} className="text-white">
-        <Menu size={22} />
+      <button onClick={onMenuClick} className="text-white w-11 h-11 flex items-center justify-center rounded-lg" aria-label="Abrir menú">
+        <Menu size={24} />
       </button>
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded flex items-center justify-center" style={{ background: COLORS.blue }}>
-          <span className="text-white" style={{ fontSize: 11, fontWeight: 700 }}>P</span>
+        <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: COLORS.blue }}>
+          <span className="text-white" style={{ fontSize: 13, fontWeight: 700 }}>P</span>
         </div>
         <span className="text-white text-sm" style={{ fontWeight: 600 }}>{pageTitle}</span>
       </div>

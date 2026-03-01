@@ -47,7 +47,7 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
       </div>
       <div className="grid grid-cols-7 gap-1 mb-2">
         {DAYS.map(d => (
-          <div key={d} className="text-center" style={{ fontSize: 11, fontWeight: 600, color: COLORS.gray }}>
+          <div key={d} className="text-center" style={{ fontSize: 12, fontWeight: 600, color: COLORS.gray }}>
             {d}
           </div>
         ))}
@@ -67,7 +67,7 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
               key={day}
               disabled={isDisabled}
               onClick={() => !isDisabled && onSelect(dateStr)}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-all text-sm mx-auto"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all text-sm mx-auto"
               style={{
                 background: isSelected ? COLORS.blue : isToday && !isSelected ? COLORS.blueLight : 'transparent',
                 color: isSelected ? 'white' : isDisabled ? COLORS.gray : isHoliday ? COLORS.error : isToday ? COLORS.blue : COLORS.text,
@@ -88,19 +88,19 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
       </div>
       <div className="flex items-center gap-4 mt-3 pt-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ background: COLORS.grayLight }} />
-          <span style={{ fontSize: 10, color: COLORS.gray }}>No disponible</span>
+          <div className="w-3.5 h-3.5 rounded-full" style={{ background: COLORS.grayLight }} />
+          <span style={{ fontSize: 12, color: COLORS.gray }}>No disponible</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full relative">
-            <div className="w-3 h-3 rounded-full" style={{ background: 'white', border: `1px solid ${COLORS.border}` }} />
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full" style={{ background: COLORS.error }} />
+          <div className="w-3.5 h-3.5 rounded-full relative">
+            <div className="w-3.5 h-3.5 rounded-full" style={{ background: 'white', border: `1px solid ${COLORS.border}` }} />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ background: COLORS.error }} />
           </div>
-          <span style={{ fontSize: 10, color: COLORS.gray }}>Festivo</span>
+          <span style={{ fontSize: 12, color: COLORS.gray }}>Festivo</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ background: COLORS.blue }} />
-          <span style={{ fontSize: 10, color: COLORS.gray }}>Seleccionado</span>
+          <div className="w-3.5 h-3.5 rounded-full" style={{ background: COLORS.blue }} />
+          <span style={{ fontSize: 12, color: COLORS.gray }}>Seleccionado</span>
         </div>
       </div>
     </div>
@@ -112,7 +112,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   return (
     <div>
       <h2 className="text-xl mb-1" style={{ color: COLORS.text, fontWeight: 700 }}>Selecciona una especialidad</h2>
-      <p className="mb-6" style={{ color: COLORS.textLight, fontSize: 14 }}>
+      <p className="mb-6" style={{ color: COLORS.textLight, fontSize: 15 }}>
         Elige el tipo de terapia que necesitas para tu tratamiento
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -142,7 +142,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                 {SPECIALTY_ICONS[sp.id]}
               </div>
               <h3 className="text-base mb-2" style={{ color: COLORS.text, fontWeight: 700 }}>{sp.name}</h3>
-              <p style={{ color: COLORS.textLight, fontSize: 12, lineHeight: 1.5 }}>{sp.description}</p>
+              <p style={{ color: COLORS.textLight, fontSize: 13, lineHeight: 1.5 }}>{sp.description}</p>
             </button>
           );
         })}
@@ -164,7 +164,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   return (
     <div>
       <h2 className="text-xl mb-1" style={{ color: COLORS.text, fontWeight: 700 }}>Elige tu profesional</h2>
-      <p className="mb-5" style={{ color: COLORS.textLight, fontSize: 14 }}>
+      <p className="mb-5" style={{ color: COLORS.textLight, fontSize: 15 }}>
         Selecciona el médico o terapista de tu preferencia
       </p>
 
@@ -211,18 +211,18 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                 </div>
                 <p className="text-sm" style={{ color: COLORS.textLight }}>{doctor.specialty}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Clock size={12} style={{ color: COLORS.green }} />
-                  <span style={{ fontSize: 12, color: COLORS.green, fontWeight: 600 }}>
+                  <Clock size={13} style={{ color: COLORS.green }} />
+                  <span style={{ fontSize: 13, color: COLORS.green, fontWeight: 600 }}>
                     Disponible desde: {doctor.nextAvailable}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <Star size={11} fill="#F57C00" style={{ color: '#F57C00' }} />
-                  <Star size={11} fill="#F57C00" style={{ color: '#F57C00' }} />
-                  <Star size={11} fill="#F57C00" style={{ color: '#F57C00' }} />
-                  <Star size={11} fill="#F57C00" style={{ color: '#F57C00' }} />
-                  <Star size={11} fill="#F57C00" style={{ color: '#F57C00' }} />
-                  <span style={{ fontSize: 11, color: COLORS.gray }}>Intervalo: {doctor.interval} min</span>
+                  <Star size={12} fill="#E65100" style={{ color: '#E65100' }} />
+                  <Star size={12} fill="#E65100" style={{ color: '#E65100' }} />
+                  <Star size={12} fill="#E65100" style={{ color: '#E65100' }} />
+                  <Star size={12} fill="#E65100" style={{ color: '#E65100' }} />
+                  <Star size={12} fill="#E65100" style={{ color: '#E65100' }} />
+                  <span style={{ fontSize: 12, color: COLORS.gray }}>Intervalo: {doctor.interval} min</span>
                 </div>
               </div>
 
@@ -262,7 +262,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   return (
     <div>
       <h2 className="text-xl mb-1" style={{ color: COLORS.text, fontWeight: 700 }}>Selecciona fecha y hora</h2>
-      <p className="mb-5" style={{ color: COLORS.textLight, fontSize: 14 }}>
+      <p className="mb-5" style={{ color: COLORS.textLight, fontSize: 15 }}>
         Elige el día y el horario disponible que más te convenga
       </p>
 
@@ -307,7 +307,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                       key={slot}
                       disabled={isOccupied}
                       onClick={() => !isOccupied && setForm((f) => ({ ...f, time: slot }))}
-                      className="py-2.5 rounded-lg text-center transition-all duration-150 text-sm"
+                      className="py-3 rounded-lg text-center transition-all duration-150"
                       style={{
                         background: isSelected
                           ? COLORS.blue
@@ -319,6 +319,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                         cursor: isOccupied ? 'not-allowed' : 'pointer',
                         fontWeight: isSelected ? 700 : 500,
                         opacity: isOccupied ? 0.5 : 1,
+                        fontSize: 14,
                       }}
                     >
                       {slot}
@@ -329,16 +330,16 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
 
               <div className="flex items-center gap-4 mt-3 pt-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ background: COLORS.blue }} />
-                  <span style={{ fontSize: 11, color: COLORS.gray }}>Seleccionado</span>
+                  <div className="w-3.5 h-3.5 rounded" style={{ background: COLORS.blue }} />
+                  <span style={{ fontSize: 13, color: COLORS.gray }}>Seleccionado</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ background: COLORS.grayLight, border: `1px solid ${COLORS.border}` }} />
-                  <span style={{ fontSize: 11, color: COLORS.gray }}>Ocupado</span>
+                  <div className="w-3.5 h-3.5 rounded" style={{ background: COLORS.grayLight, border: `1px solid ${COLORS.border}` }} />
+                  <span style={{ fontSize: 13, color: COLORS.gray }}>Ocupado</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded" style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }} />
-                  <span style={{ fontSize: 11, color: COLORS.gray }}>Disponible</span>
+                  <div className="w-3.5 h-3.5 rounded" style={{ background: COLORS.bg, border: `1px solid ${COLORS.border}` }} />
+                  <span style={{ fontSize: 13, color: COLORS.gray }}>Disponible</span>
                 </div>
               </div>
             </div>
@@ -369,14 +370,14 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   return (
     <div>
       <h2 className="text-xl mb-1" style={{ color: COLORS.text, fontWeight: 700 }}>Confirma tu cita</h2>
-      <p className="mb-5" style={{ color: COLORS.textLight, fontSize: 14 }}>
+      <p className="mb-5" style={{ color: COLORS.textLight, fontSize: 15 }}>
         Revisa los datos y completa tu información de contacto
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Summary card */}
         <div>
-          <label className="block mb-2" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>Resumen de tu cita</label>
+          <label className="block mb-2" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Resumen de tu cita</label>
           <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${COLORS.blue}`, boxShadow: `0 2px 12px ${COLORS.blue}20` }}>
             <div className="px-5 py-3" style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)` }}>
               <p className="text-white text-sm" style={{ fontWeight: 600 }}>Cita Médica – Piedrazul</p>
@@ -394,8 +395,8 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                     {item.icon}
                   </div>
                   <div>
-                    <p style={{ fontSize: 11, color: COLORS.gray, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{item.label}</p>
-                    <p style={{ fontSize: 14, color: COLORS.text, fontWeight: 600 }}>{item.value || '–'}</p>
+                    <p style={{ fontSize: 12, color: COLORS.gray, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{item.label}</p>
+                    <p style={{ fontSize: 15, color: COLORS.text, fontWeight: 600 }}>{item.value || '–'}</p>
                   </div>
                 </div>
               ))}
@@ -405,12 +406,12 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
 
         {/* Contact form */}
         <div className="flex flex-col gap-4">
-          <label className="block" style={{ color: COLORS.text, fontSize: 13, fontWeight: 600 }}>Información de contacto</label>
+          <label className="block" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Información de contacto</label>
 
           {/* Email */}
           <div>
-            <label className="flex items-center gap-1 mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
-              <Mail size={12} /> Correo electrónico <span style={{ color: COLORS.error }}>*</span>
+            <label className="flex items-center gap-1 mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
+              <Mail size={14} /> Correo electrónico <span style={{ color: COLORS.error }}>*</span>
             </label>
             <input
               type="email"
@@ -418,25 +419,25 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               value={form.email}
               onChange={(e) => { setForm((f) => ({ ...f, email: e.target.value })); setEmailError(''); }}
               onBlur={(e) => validateEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg outline-none"
+              className="w-full px-4 py-3 rounded-lg outline-none"
               style={{
                 border: `1.5px solid ${emailError ? COLORS.error : COLORS.border}`,
-                fontSize: 13,
+                fontSize: 15,
                 color: COLORS.text,
                 background: COLORS.bg,
               }}
             />
             {emailError && (
-              <p className="flex items-center gap-1 mt-1" style={{ color: COLORS.error, fontSize: 11 }}>
-                <AlertCircle size={11} /> {emailError}
+              <p className="flex items-center gap-1 mt-1" style={{ color: COLORS.error, fontSize: 13 }}>
+                <AlertCircle size={13} /> {emailError}
               </p>
             )}
           </div>
 
           {/* Phone */}
           <div>
-            <label className="flex items-center gap-1 mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
-              <Phone size={12} /> Teléfono / Celular <span style={{ color: COLORS.error }}>*</span>
+            <label className="flex items-center gap-1 mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
+              <Phone size={14} /> Teléfono / Celular <span style={{ color: COLORS.error }}>*</span>
             </label>
             <input
               type="tel"
@@ -444,24 +445,24 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               value={form.phone}
               onChange={(e) => { setForm((f) => ({ ...f, phone: e.target.value })); setPhoneError(''); }}
               onBlur={(e) => validatePhone(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg outline-none"
+              className="w-full px-4 py-3 rounded-lg outline-none"
               style={{
                 border: `1.5px solid ${phoneError ? COLORS.error : COLORS.border}`,
-                fontSize: 13,
+                fontSize: 15,
                 color: COLORS.text,
                 background: COLORS.bg,
               }}
             />
             {phoneError && (
-              <p className="flex items-center gap-1 mt-1" style={{ color: COLORS.error, fontSize: 11 }}>
-                <AlertCircle size={11} /> {phoneError}
+              <p className="flex items-center gap-1 mt-1" style={{ color: COLORS.error, fontSize: 13 }}>
+                <AlertCircle size={13} /> {phoneError}
               </p>
             )}
           </div>
 
           {/* Observations */}
           <div>
-            <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 12, fontWeight: 600 }}>
+            <label className="block mb-1.5" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
               Observaciones (opcional)
             </label>
             <textarea
@@ -469,8 +470,8 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               placeholder="Síntomas, motivo de consulta, información adicional..."
               value={form.observations}
               onChange={(e) => setForm((f) => ({ ...f, observations: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-lg outline-none resize-none"
-              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.bg }}
+              className="w-full px-4 py-3 rounded-lg outline-none resize-none"
+              style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 15, color: COLORS.text, background: COLORS.bg }}
             />
           </div>
 
@@ -479,7 +480,7 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
             <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: COLORS.grayLight }}>
               <Shield size={14} style={{ color: COLORS.gray }} />
             </div>
-            <span style={{ fontSize: 12, color: COLORS.textLight, flex: 1 }}>No soy un robot</span>
+            <span style={{ fontSize: 14, color: COLORS.textLight, flex: 1 }}>No soy un robot</span>
             <div className="w-10 h-10 flex items-center justify-center">
               <svg viewBox="0 0 24 24" width="28" height="28">
                 <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="#4285F4" />
@@ -489,15 +490,15 @@ function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           </div>
 
           {/* Terms */}
-          <label className="flex items-start gap-2 cursor-pointer">
+          <label className="flex items-start gap-2.5 cursor-pointer">
             <input
               type="checkbox"
               checked={form.termsAccepted}
               onChange={(e) => setForm((f) => ({ ...f, termsAccepted: e.target.checked }))}
-              className="mt-1"
+              className="mt-1 w-5 h-5"
               style={{ accentColor: COLORS.blue }}
             />
-            <span style={{ fontSize: 12, color: COLORS.textLight }}>
+            <span style={{ fontSize: 14, color: COLORS.textLight }}>
               Acepto los{' '}
               <span className="cursor-pointer hover:underline" style={{ color: COLORS.blue }}>términos y condiciones</span>
               {' '}y la{' '}
@@ -529,7 +530,7 @@ function Step5({ form }: { form: FormState }) {
       <h2 className="text-2xl mb-2" style={{ color: COLORS.green, fontWeight: 800 }}>
         ¡Cita agendada exitosamente!
       </h2>
-      <p className="mb-6" style={{ color: COLORS.textLight, fontSize: 14 }}>
+      <p className="mb-6" style={{ color: COLORS.textLight, fontSize: 15 }}>
         Hemos enviado la confirmación a tu correo electrónico
       </p>
 
@@ -548,8 +549,8 @@ function Step5({ form }: { form: FormState }) {
             { label: 'Correo', value: form.email || 'paciente@email.com' },
           ].map((item) => (
             <div key={item.label}>
-              <p style={{ fontSize: 10, color: COLORS.gray, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{item.label}</p>
-              <p style={{ fontSize: 13, color: COLORS.text, fontWeight: 600 }}>{item.value || '–'}</p>
+            <p style={{ fontSize: 11, color: COLORS.gray, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{item.label}</p>
+            <p style={{ fontSize: 14, color: COLORS.text, fontWeight: 600 }}>{item.value || '–'}</p>
             </div>
           ))}
         </div>
@@ -559,8 +560,8 @@ function Step5({ form }: { form: FormState }) {
       <div className="w-full rounded-xl p-4 mb-6 flex items-start gap-3 text-left" style={{ background: COLORS.warningLight, border: `1px solid #FFCC80` }}>
         <AlertCircle size={18} style={{ color: COLORS.warning, flexShrink: 0, marginTop: 1 }} />
         <div>
-          <p style={{ color: COLORS.warning, fontWeight: 700, fontSize: 13 }}>Recordatorio importante</p>
-          <p style={{ color: '#5D4037', fontSize: 12, lineHeight: 1.5 }}>
+          <p style={{ color: COLORS.warning, fontWeight: 700, fontSize: 14 }}>Recordatorio importante</p>
+          <p style={{ color: '#5D4037', fontSize: 14, lineHeight: 1.5 }}>
             Por favor llega <strong>15 minutos antes</strong> de tu cita. Trae tu documento de identidad y cualquier examen médico previo relevante.
           </p>
         </div>
@@ -569,26 +570,26 @@ function Step5({ form }: { form: FormState }) {
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 w-full">
         <button
-          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border flex-1 hover:bg-gray-50 transition-colors"
-          style={{ borderColor: COLORS.border, color: COLORS.textLight, fontSize: 13, fontWeight: 600 }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border flex-1 hover:bg-gray-50 transition-colors"
+          style={{ borderColor: COLORS.border, color: COLORS.textLight, fontSize: 14, fontWeight: 600 }}
         >
-          <Download size={16} />
+          <Download size={18} />
           Descargar comprobante
         </button>
         <button
           onClick={() => navigate('/schedule')}
-          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border flex-1 hover:bg-blue-50 transition-colors"
-          style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 13, fontWeight: 600 }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border flex-1 hover:bg-blue-50 transition-colors"
+          style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 14, fontWeight: 600 }}
         >
-          <RefreshCw size={16} />
+          <RefreshCw size={18} />
           Agendar otra cita
         </button>
         <button
           onClick={() => navigate('/dashboard')}
-          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl flex-1 text-white hover:opacity-90 transition-all"
-          style={{ background: COLORS.blue, fontSize: 13, fontWeight: 600 }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl flex-1 text-white hover:opacity-90 transition-all"
+          style={{ background: COLORS.blue, fontSize: 14, fontWeight: 600 }}
         >
-          <Home size={16} />
+          <Home size={18} />
           Ir al inicio
         </button>
       </div>
@@ -642,7 +643,7 @@ export default function SchedulingFlow() {
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <h1 className="text-lg" style={{ color: COLORS.text, fontWeight: 700 }}>Agenda tu cita</h1>
-                <p style={{ color: COLORS.textLight, fontSize: 12 }}>Paso {step} de {STEPS.length}</p>
+                <p style={{ color: COLORS.textLight, fontSize: 14 }}>Paso {step} de {STEPS.length}</p>
               </div>
               <div style={{ maxWidth: 500, width: '100%' }}>
                 <ProgressSteps steps={STEPS} current={step} />
