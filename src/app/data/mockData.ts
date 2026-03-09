@@ -94,15 +94,25 @@ export const TIME_SLOTS = [
 
 export const OCCUPIED_SLOTS = ['7:00 AM', '7:40 AM', '8:20 AM', '9:00 AM', '10:00 AM', '11:00 AM'];
 
-export const APPOINTMENTS_TODAY = [
-  { id: 1, time: '7:00 AM', patient: 'María González López', document: '1.020.456.789', phone: '315 234 5678', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Primera consulta', status: 'Confirmada', color: '#1E88E5' },
-  { id: 2, time: '7:20 AM', patient: 'Carlos Rueda Mora', document: '79.456.123', phone: '310 345 6789', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Seguimiento dolor lumbar', status: 'Confirmada', color: '#1E88E5' },
-  { id: 3, time: '8:00 AM', patient: 'Ana Sofía Pérez', document: '52.123.456', phone: '321 456 7890', specialty: 'Quiropraxia', doctor: 'Dr. Andrés Pulido', observation: '', status: 'Confirmada', color: '#2E7D32' },
-  { id: 4, time: '8:30 AM', patient: 'Roberto Silva Cano', document: '80.234.567', phone: '300 567 8901', specialty: 'Fisioterapia', doctor: 'Dra. Lucía Vargas', observation: 'Post-operatorio rodilla', status: 'Completada', color: '#F57C00' },
-  { id: 5, time: '9:00 AM', patient: 'Isabella Martínez', document: '1.033.789.456', phone: '317 678 9012', specialty: 'Fisioterapia', doctor: 'Dra. Lucía Vargas', observation: '', status: 'Confirmada', color: '#F57C00' },
-  { id: 6, time: '9:20 AM', patient: 'Felipe Herrera Ríos', document: '1.019.234.567', phone: '318 789 0123', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Migrañas crónicas', status: 'Confirmada', color: '#1E88E5' },
-  { id: 7, time: '10:00 AM', patient: 'Valentina Ospina', document: '43.567.890', phone: '312 890 1234', specialty: 'Quiropraxia', doctor: 'Dr. Andrés Pulido', observation: 'Dolor cervical', status: 'Pendiente', color: '#2E7D32' },
+export const APPOINTMENTS = [
+  // 20 Feb 2025
+  { id: 1, date: '2025-02-20', time: '7:00 AM', patient: 'María González López', document: '1.020.456.789', phone: '315 234 5678', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Primera consulta', status: 'Confirmada', color: '#1E88E5' },
+  { id: 2, date: '2025-02-20', time: '7:20 AM', patient: 'Carlos Rueda Mora', document: '79.456.123', phone: '310 345 6789', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Seguimiento dolor lumbar', status: 'Confirmada', color: '#1E88E5' },
+  { id: 3, date: '2025-02-20', time: '8:00 AM', patient: 'Ana Sofía Pérez', document: '52.123.456', phone: '321 456 7890', specialty: 'Quiropraxia', doctor: 'Dr. Andrés Pulido', observation: '', status: 'Confirmada', color: '#2E7D32' },
+  { id: 4, date: '2025-02-20', time: '8:30 AM', patient: 'Roberto Silva Cano', document: '80.234.567', phone: '300 567 8901', specialty: 'Fisioterapia', doctor: 'Dra. Lucía Vargas', observation: 'Post-operatorio rodilla', status: 'Completada', color: '#F57C00' },
+  { id: 5, date: '2025-02-20', time: '9:00 AM', patient: 'Isabella Martínez', document: '1.033.789.456', phone: '317 678 9012', specialty: 'Fisioterapia', doctor: 'Dra. Lucía Vargas', observation: '', status: 'Confirmada', color: '#F57C00' },
+  { id: 6, date: '2025-02-20', time: '9:20 AM', patient: 'Felipe Herrera Ríos', document: '1.019.234.567', phone: '318 789 0123', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Migrañas crónicas', status: 'Confirmada', color: '#1E88E5' },
+  { id: 7, date: '2025-02-20', time: '10:00 AM', patient: 'Valentina Ospina', document: '43.567.890', phone: '312 890 1234', specialty: 'Quiropraxia', doctor: 'Dr. Andrés Pulido', observation: 'Dolor cervical', status: 'Pendiente', color: '#2E7D32' },
+  // 21 Feb 2025
+  { id: 8, date: '2025-02-21', time: '7:00 AM', patient: 'Laura Jiménez Díaz', document: '1.015.678.234', phone: '314 123 4567', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: 'Control mensual', status: 'Confirmada', color: '#1E88E5' },
+  { id: 9, date: '2025-02-21', time: '8:00 AM', patient: 'Diego Morales Castro', document: '80.345.678', phone: '320 567 8901', specialty: 'Quiropraxia', doctor: 'Dr. Andrés Pulido', observation: 'Dolor de espalda', status: 'Pendiente', color: '#2E7D32' },
+  // 19 Feb 2025
+  { id: 10, date: '2025-02-19', time: '7:00 AM', patient: 'Camila Rojas Pinto', document: '52.789.012', phone: '316 234 5678', specialty: 'Fisioterapia', doctor: 'Dra. Lucía Vargas', observation: 'Rehabilitación hombro', status: 'Completada', color: '#F57C00' },
+  { id: 11, date: '2025-02-19', time: '8:00 AM', patient: 'Andrés López Mejía', document: '1.022.345.678', phone: '311 345 6789', specialty: 'Terapia Neural', doctor: 'Dra. Carolina Mendoza', observation: '', status: 'Completada', color: '#1E88E5' },
 ];
+
+/** @deprecated Use APPOINTMENTS instead */
+export const APPOINTMENTS_TODAY = APPOINTMENTS.filter(a => a.date === '2025-02-20');
 
 export const PATIENTS = [
   { id: 1, name: 'María González López', document: '1.020.456.789', phone: '315 234 5678', gender: 'Femenino', birthDate: '1990-05-14', age: 34 },

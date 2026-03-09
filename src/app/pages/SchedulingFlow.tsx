@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import {
-  Brain, Bone, Activity, ChevronRight, ChevronLeft,
+  Brain, Bone, Activity, ChevronRight, ChevronLeft, ChevronDown,
   Star, Clock, Calendar, User, Phone, Mail, CheckCircle,
   Shield, Download, RefreshCw, Home, Check, AlertCircle, X
 } from 'lucide-react';
@@ -154,9 +154,11 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
 // Step 2
 function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
   const [search, setSearch] = React.useState('');
+  const [filterType, setFilterType] = React.useState('Todos');
   const filtered = DOCTORS.filter(
     (d) =>
       (!form.specialty || d.specialty === SPECIALTIES.find((s) => s.id === form.specialty)?.name) &&
+      (filterType === 'Todos' || d.type === filterType) &&
       d.name.toLowerCase().includes(search.toLowerCase()) &&
       d.status === 'Activo'
   );
@@ -168,17 +170,33 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         Selecciona el médico o terapista de tu preferencia
       </p>
 
-      {/* Search */}
-      <div className="relative mb-4 max-w-sm">
-        <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
-        <input
-          type="text"
-          placeholder="Buscar por nombre..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-lg outline-none"
-          style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.white }}
-        />
+      {/* Search + Type filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: COLORS.gray }} />
+          <input
+            type="text"
+            placeholder="Buscar por nombre..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg outline-none"
+            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.white }}
+          />
+        </div>
+        <div className="relative" style={{ minWidth: 180 }}>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="w-full pl-3 pr-8 py-2.5 rounded-lg outline-none appearance-none"
+            aria-label="Filtrar por tipo de profesional"
+            style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 13, color: COLORS.text, background: COLORS.white }}
+          >
+            <option value="Todos">Médico / Terapista</option>
+            <option value="Médico">Médico</option>
+            <option value="Terapista">Terapista</option>
+          </select>
+          <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: COLORS.gray }} />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
