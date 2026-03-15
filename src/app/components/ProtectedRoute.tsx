@@ -10,10 +10,10 @@ interface ProtectedRouteProps {
 /** Ruta de inicio según el rol autenticado */
 function getHomePathByRole(role: string | null): string {
   switch (role) {
-    case 'Admin':     return '/dashboard';
-    case 'Doctor':    return '/agenda';
-    case 'Scheduler': return '/citas-por-medico';
-    case 'Patient':   return '/schedule';
+    case 'Admin':     return '/app/dashboard';
+    case 'Doctor':    return '/app/agenda';
+    case 'Scheduler': return '/app/citas-por-medico';
+    case 'Patient':   return '/app/schedule';
     default:          return '/login';
   }
 }

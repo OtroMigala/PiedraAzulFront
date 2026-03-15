@@ -3,24 +3,15 @@ import { useNavigate } from 'react-router';
 import { Eye, EyeOff, Lock, User, AlertCircle, Shield } from 'lucide-react';
 import { COLORS } from '../data/mockData';
 import { apiFetch } from '../services/api';
-import { saveAuth, extractRoleFromToken, extractFullNameFromToken, validateAuth, getRole } from '../store/authStore';
+import { saveAuth, extractRoleFromToken, extractFullNameFromToken, clearAuth } from '../store/authStore';
 
 export default function Login() {
   const navigate = useNavigate();
 
-  // Si el usuario ya está autenticado, redirigir a su panel — no mostrar el login
+  // Limpiar sesión anterior al llegar al login
   React.useEffect(() => {
-    if (validateAuth()) {
-      const role = getRole();
-      switch (role) {
-        case 'Admin':     navigate('/dashboard', { replace: true }); break;
-        case 'Doctor':    navigate('/agenda', { replace: true }); break;
-        case 'Scheduler': navigate('/citas-por-medico', { replace: true }); break;
-        case 'Patient':   navigate('/schedule', { replace: true }); break;
-        default:          break;
-      }
-    }
-  }, [navigate]);
+    clearAuth();
+  }, []);
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [remember, setRemember] = React.useState(false);
@@ -67,15 +58,15 @@ export default function Login() {
   const getRedirectPathByRole = (role: string): string => {
     switch (role) {
       case 'Admin':
-        return '/dashboard';
+        return '/app/dashboard';
       case 'Doctor':
-        return '/agenda';
+        return '/app/agenda';
       case 'Scheduler':
-        return '/citas-por-medico';
+        return '/app/citas-por-medico';
       case 'Patient':
-        return '/schedule';
+        return '/app/schedule';
       default:
-        return '/dashboard';
+        return '/app/dashboard';
     }
   };
 
@@ -242,7 +233,7 @@ export default function Login() {
 
           {/* Patient scheduling */}
           <button
-            onClick={() => navigate('/schedule')}
+            onClick={() => navigate('/app/schedule')}
             className="w-full py-3 rounded-xl transition-all hover:bg-blue-50 border"
             style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 15, fontWeight: 600 }}
           >

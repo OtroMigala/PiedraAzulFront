@@ -19,29 +19,29 @@ interface SidebarProps {
 
 const ROLE_MENUS: Record<Role, { label: string; icon: React.ReactNode; path?: string; action?: () => void }[]> = {
   admin: [
-    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
-    { label: 'Citas por Médico', icon: <ClipboardList size={20} />, path: '/citas-por-medico' },
+    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/app/dashboard' },
+    { label: 'Citas por Médico', icon: <ClipboardList size={20} />, path: '/app/citas-por-medico' },
     { label: 'Agendar Cita', icon: <Calendar size={20} />, action: undefined },
-    { label: 'Agenda Diaria', icon: <ClipboardList size={20} />, path: '/agenda' },
-    { label: 'Médicos/Terapistas', icon: <UserCheck size={20} />, path: '/doctors' },
-    { label: 'Historial Clínico', icon: <FileText size={20} />, path: '/history' },
-    { label: 'Auditoría', icon: <Shield size={20} />, path: '/audit' },
-    { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/reports' },
+    { label: 'Agenda Diaria', icon: <ClipboardList size={20} />, path: '/app/agenda' },
+    { label: 'Médicos/Terapistas', icon: <UserCheck size={20} />, path: '/app/doctors' },
+    { label: 'Historial Clínico', icon: <FileText size={20} />, path: '/app/history' },
+    { label: 'Auditoría', icon: <Shield size={20} />, path: '/app/audit' },
+    { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/app/reports' },
   ],
   doctor: [
-    { label: 'Mis Citas', icon: <Calendar size={20} />, path: '/agenda' },
-    { label: 'Historia Clínica', icon: <FileText size={20} />, path: '/history' },
-    { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/reports' },
+    { label: 'Mis Citas', icon: <Calendar size={20} />, path: '/app/agenda' },
+    { label: 'Historia Clínica', icon: <FileText size={20} />, path: '/app/history' },
+    { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/app/reports' },
   ],
   scheduler: [
-    { label: 'Citas por Médico', icon: <ClipboardList size={20} />, path: '/citas-por-medico' },
+    { label: 'Citas por Médico', icon: <ClipboardList size={20} />, path: '/app/citas-por-medico' },
     { label: 'Agendar Cita', icon: <Calendar size={20} />, action: undefined },
-    { label: 'Agenda del Día', icon: <ClipboardList size={20} />, path: '/agenda' },
-    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
+    { label: 'Agenda del Día', icon: <ClipboardList size={20} />, path: '/app/agenda' },
+    { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/app/dashboard' },
   ],
   patient: [
-    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/schedule' },
-    { label: 'Mis Citas', icon: <ClipboardList size={20} />, path: '/agenda' },
+    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/app/schedule' },
+    { label: 'Mis Citas', icon: <ClipboardList size={20} />, path: '/app/agenda' },
   ],
 };
 

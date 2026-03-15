@@ -32,47 +32,52 @@ function RootRedirect() {
   if (!validateAuth()) return <Navigate to="/login" replace />;
   const role = getRole();
   switch (role) {
-    case 'Admin':     return <Navigate to="/dashboard" replace />;
-    case 'Doctor':    return <Navigate to="/agenda" replace />;
-    case 'Scheduler': return <Navigate to="/citas-por-medico" replace />;
-    case 'Patient':   return <Navigate to="/schedule" replace />;
+    case 'Admin':     return <Navigate to="/app/dashboard" replace />;
+    case 'Doctor':    return <Navigate to="/app/agenda" replace />;
+    case 'Scheduler': return <Navigate to="/app/citas-por-medico" replace />;
+    case 'Patient':   return <Navigate to="/app/schedule" replace />;
     default:          return <Navigate to="/login" replace />;
   }
 }
 
 export const router = createBrowserRouter([
+  // Siempre redirige '/' a '/login'
+  { path: '/', element: <Navigate to="/login" replace /> },
+
   // Rutas públicas
   { path: '/login', Component: Login },
-  { path: '/schedule', Component: SchedulingFlow },
 
-  // Rutas protegidas bajo Layout
+
+  // Rutas protegidas bajo /app
   {
-    path: '/',
+    path: '/app',
     Component: Layout,
     children: [
-      // Redirect raíz según rol autenticado
+      // Redirige /app a dashboard según rol
       { index: true, element: <RootRedirect /> },
 
       // Admin + Agendadora
       {
-        element: <ProtectedRoute allowedRoles={['Admin', 'Scheduler']} />,
+        element: <ProtectedRoute allowedRoles={['Admin', 'Scheduler']} />, 
         children: [
           { path: 'dashboard', Component: Dashboard },
           { path: 'citas-por-medico', Component: AppointmentsByDoctor },
         ],
       },
 
-      // Admin + Agendadora + Médico + Paciente
+
+      // Admin + Agendadora + Médico + Paciente + Paciente agendando cita
       {
-        element: <ProtectedRoute allowedRoles={['Admin', 'Doctor', 'Scheduler', 'Patient']} />,
+        element: <ProtectedRoute allowedRoles={['Admin', 'Doctor', 'Scheduler', 'Patient']} />, 
         children: [
           { path: 'agenda', Component: DailyAgenda },
+          { path: 'schedule', Component: SchedulingFlow },
         ],
       },
 
       // Admin + Médico
       {
-        element: <ProtectedRoute allowedRoles={['Admin', 'Doctor']} />,
+        element: <ProtectedRoute allowedRoles={['Admin', 'Doctor']} />, 
         children: [
           { path: 'history', Component: MedicalHistory },
           { path: 'reports', Component: ReportsPage },
@@ -81,7 +86,7 @@ export const router = createBrowserRouter([
 
       // Solo Admin
       {
-        element: <ProtectedRoute allowedRoles={['Admin']} />,
+        element: <ProtectedRoute allowedRoles={['Admin']} />, 
         children: [
           { path: 'doctors', Component: Doctors },
           { path: 'audit', Component: AuditPage },
@@ -92,4 +97,7 @@ export const router = createBrowserRouter([
       { path: '*', element: <RootRedirect /> },
     ],
   },
+
+  // Cualquier ruta desconocida fuera de /app → login
+  { path: '*', element: <Navigate to="/login" replace /> },
 ]);

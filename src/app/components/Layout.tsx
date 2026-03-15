@@ -25,14 +25,14 @@ function mapBackendRoleToComponentRole(backendRole: string | null): Role {
 }
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/schedule': 'Agendar Cita',
-  '/agenda': 'Agenda Diaria',
-  '/citas-por-medico': 'Citas por Médico',
-  '/doctors': 'Médicos',
-  '/history': 'Historia Clínica',
-  '/audit': 'Auditoría',
-  '/reports': 'Reportes',
+  '/app/dashboard': 'Dashboard',
+  '/app/schedule': 'Agendar Cita',
+  '/app/agenda': 'Agenda Diaria',
+  '/app/citas-por-medico': 'Citas por Médico',
+  '/app/doctors': 'Médicos',
+  '/app/history': 'Historia Clínica',
+  '/app/audit': 'Auditoría',
+  '/app/reports': 'Reportes',
 };
 
 export function Layout() {
