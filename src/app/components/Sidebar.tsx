@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router';
 import {
   Calendar, UserCheck, LayoutDashboard, ClipboardList,
-  BarChart2, LogOut, ChevronDown, Shield, FileText, X, Menu
+  BarChart2, LogOut, Shield, FileText, X, Menu
 } from 'lucide-react';
 import { COLORS } from '../data/mockData';
 import { clearAuth } from '../store/authStore';
@@ -11,7 +11,6 @@ type Role = 'admin' | 'doctor' | 'scheduler' | 'patient';
 
 interface SidebarProps {
   role: Role;
-  onRoleChange: (role: Role) => void;
   isOpen: boolean;
   onClose: () => void;
   onNewAppointmentClick: () => void;
@@ -68,9 +67,8 @@ const ROLE_BADGE_COLORS: Record<Role, string> = {
   patient: '#F57C00',
 };
 
-export function Sidebar({ role, onRoleChange, isOpen, onClose, onNewAppointmentClick, userFullName }: SidebarProps) {
+export function Sidebar({ role, isOpen, onClose, onNewAppointmentClick, userFullName }: SidebarProps) {
   const navigate = useNavigate();
-  const [showRoleMenu, setShowRoleMenu] = React.useState(false);
   const menu = ROLE_MENUS[role].map((item) =>
     item.action === undefined && !item.path
       ? { ...item, action: onNewAppointmentClick }
@@ -119,12 +117,9 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose, onNewAppointmentC
           </button>
         </div>
 
-        {/* User & Role */}
+        {/* User & Role (solo lectura — el rol viene del token autenticado) */}
         <div className="px-4 py-3" style={{ borderBottom: `1px solid rgba(255,255,255,0.1)` }}>
-          <button
-            className="w-full flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-white/10 transition-colors"
-            onClick={() => setShowRoleMenu(!showRoleMenu)}
-          >
+          <div className="flex items-center gap-3 rounded-lg px-2 py-2">
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ background: ROLE_BADGE_COLORS[role] }}>
               <span className="text-white text-sm" style={{ fontWeight: 700 }}>
@@ -137,25 +132,7 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose, onNewAppointmentC
                 {ROLE_BADGE_LABELS[role]}
               </span>
             </div>
-            <ChevronDown size={14} className={`text-white/60 transition-transform ${showRoleMenu ? 'rotate-180' : ''}`} />
-          </button>
-
-          {showRoleMenu && (
-            <div className="mt-2 rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-              {(['admin', 'doctor', 'scheduler', 'patient'] as Role[]).map((r) => (
-                <button
-                  key={r}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-white/10 transition-colors"
-                  onClick={() => { onRoleChange(r); setShowRoleMenu(false); }}
-                >
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: ROLE_BADGE_COLORS[r] }} />
-                  <span className="text-sm" style={{ color: r === role ? 'white' : 'rgba(255,255,255,0.6)' }}>
-                    {ROLE_BADGE_LABELS[r]}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Navigation */}

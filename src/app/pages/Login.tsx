@@ -3,10 +3,25 @@ import { useNavigate } from 'react-router';
 import { Eye, EyeOff, Lock, User, AlertCircle, Shield } from 'lucide-react';
 import { COLORS } from '../data/mockData';
 import { apiFetch } from '../services/api';
-import { saveAuth, extractRoleFromToken, extractFullNameFromToken } from '../store/authStore';
+import { saveAuth, extractRoleFromToken, extractFullNameFromToken, validateAuth, getRole } from '../store/authStore';
 
 export default function Login() {
   const navigate = useNavigate();
+
+  // Si el usuario ya está autenticado, redirigir a su panel — no mostrar el login
+  React.useEffect(() => {
+    if (validateAuth()) {
+      const role = getRole();
+      switch (role) {
+        case 'Admin':     navigate('/dashboard', { replace: true }); break;
+        case 'Doctor':    navigate('/agenda', { replace: true }); break;
+        case 'Scheduler': navigate('/citas-por-medico', { replace: true }); break;
+        case 'Patient':   navigate('/schedule', { replace: true }); break;
+        default:          break;
+      }
+    }
+  }, [navigate]);
+
   const [showPassword, setShowPassword] = React.useState(false);
   const [remember, setRemember] = React.useState(false);
   const [email, setEmail] = React.useState('');

@@ -1,14 +1,24 @@
 import { Navigate, Outlet } from 'react-router';
-import { isAuthenticated, getRole, validateAuth } from '../store/authStore';
+import { getRole, validateAuth } from '../store/authStore';
 
 type AllowedRole = 'Admin' | 'Doctor' | 'Scheduler' | 'Patient';
 
 interface ProtectedRouteProps {
   allowedRoles?: AllowedRole[];
-  redirectTo?: string;
 }
 
-export function ProtectedRoute({ allowedRoles, redirectTo = '/login' }: ProtectedRouteProps) {
+/** Ruta de inicio según el rol autenticado */
+function getHomePathByRole(role: string | null): string {
+  switch (role) {
+    case 'Admin':     return '/dashboard';
+    case 'Doctor':    return '/agenda';
+    case 'Scheduler': return '/citas-por-medico';
+    case 'Patient':   return '/schedule';
+    default:          return '/login';
+  }
+}
+
+export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   // Validar autenticación y expiración del token
   if (!validateAuth()) {
     console.warn('[ProtectedRoute] Token expirado o no autenticado. Redirigiendo a login.');
@@ -20,7 +30,6 @@ export function ProtectedRoute({ allowedRoles, redirectTo = '/login' }: Protecte
     return <Outlet />;
   }
 
-  // Verificar si el usuario tiene uno de los roles permitidos
   const userRole = getRole();
 
   if (!userRole) {
@@ -28,9 +37,10 @@ export function ProtectedRoute({ allowedRoles, redirectTo = '/login' }: Protecte
     return <Navigate to="/login" replace />;
   }
 
+  // Si el usuario no tiene permiso, redirigir a su propio panel — nunca al de otro rol
   if (!allowedRoles.includes(userRole)) {
     console.warn(`[ProtectedRoute] Acceso denegado. Rol requerido: ${allowedRoles.join(', ')}. Rol del usuario: ${userRole}`);
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to={getHomePathByRole(userRole)} replace />;
   }
 
   return <Outlet />;

@@ -35,6 +35,12 @@ type FormState = {
   termsAccepted: boolean;
 };
 
+interface SchedulingConfig {
+  weeksAhead: number;
+  minDate: string;
+  maxDate: string;
+}
+
 const SPECIALTY_ICONS: Record<string, React.ReactNode> = {
   neural: <Brain size={36} />,
   quiro: <Bone size={36} />,
@@ -44,7 +50,7 @@ const SPECIALTY_ICONS: Record<string, React.ReactNode> = {
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelect: (d: string) => void }) {
+function MiniCalendar({ selected, onSelect, config }: { selected: string | null; onSelect: (d: string) => void; config: SchedulingConfig | null }) {
   const today = new Date();
   const [viewYear, setViewYear] = React.useState(today.getFullYear());
   const [viewMonth, setViewMonth] = React.useState(today.getMonth()); // 0-indexed
@@ -68,6 +74,13 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
     const t = new Date(); t.setHours(0, 0, 0, 0);
     return d < t;
   };
+
+  const isOutsideWindow = (day: number) => {
+    if (!config) return false;
+    const dateStr = toDateStr(day);
+    return dateStr < config.minDate || dateStr > config.maxDate;
+  };
+
   const isWeekend = (day: number) => {
     const dow = new Date(viewYear, viewMonth, day).getDay();
     return dow === 0 || dow === 6;
@@ -111,7 +124,7 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
       <div className="grid grid-cols-7 gap-1">
         {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`off-${i}`} />)}
         {allDays.map(day => {
-          const disabled = isPast(day) || isWeekend(day);
+          const disabled = isPast(day) || isWeekend(day) || isOutsideWindow(day);
           const dateStr = toDateStr(day);
           const isSelected = selected === dateStr;
           const isTodayDay = day === todayDay;
@@ -318,7 +331,7 @@ function Step2({ form, setForm, doctors }: { form: FormState; setForm: React.Dis
 }
 
 // Step 3
-function Step3({ form, setForm, timeSlots, occupiedSlots }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>>; timeSlots: string[]; occupiedSlots: string[] }) {
+function Step3({ form, setForm, timeSlots, occupiedSlots, config }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>>; timeSlots: string[]; occupiedSlots: string[]; config: SchedulingConfig | null }) {
   return (
     <div>
       <h2 className="text-xl mb-1" style={{ color: COLORS.text, fontWeight: 700 }}>Selecciona fecha y hora</h2>
@@ -336,6 +349,7 @@ function Step3({ form, setForm, timeSlots, occupiedSlots }: { form: FormState; s
           <MiniCalendar
             selected={form.date}
             onSelect={(d) => setForm((f) => ({ ...f, date: d, time: null }))}
+            config={config}
           />
         </div>
 
@@ -658,6 +672,7 @@ function Step5({ form }: { form: FormState }) {
 }
 
 export default function SchedulingFlow() {
+  const navigate = useNavigate();
   const [step, setStep] = React.useState(1);
   const [form, setForm] = React.useState<FormState>({
     specialty: null,
@@ -671,9 +686,38 @@ export default function SchedulingFlow() {
   });
   const [doctors, setDoctors] = React.useState<Doctor[]>([]);
   const [apiSlots, setApiSlots] = React.useState<string[]>([]);
+  const [schedulingConfig, setSchedulingConfig] = React.useState<SchedulingConfig | null>(null);
+  const [authChecked, setAuthChecked] = React.useState(false);
+
+  // Validar autenticación al montar (CA3.1)
+  React.useEffect(() => {
+    const auth = getAuth();
+    if (!auth || auth.role !== 'Patient') {
+      console.warn('[SchedulingFlow] ⚠️ Usuario no autenticado o no es paciente');
+      setAuthChecked(true);
+      return;
+    }
+    console.log('[SchedulingFlow] ✅ Usuario autenticado como paciente');
+    setAuthChecked(true);
+  }, []);
+
+  // Cargar configuración de ventana de tiempo (CA3.3)
+  React.useEffect(() => {
+    console.log('[SchedulingFlow] 🔧 Cargando configuración de agendamiento...');
+    apiFetch('/api/scheduling/config')
+      .then((res: unknown) => {
+        const cfg = res as SchedulingConfig;
+        console.log('[SchedulingFlow] ✅ Config cargada:', cfg);
+        setSchedulingConfig(cfg);
+      })
+      .catch((err: unknown) => {
+        console.error('[SchedulingFlow] ❌ Error cargando config:', err);
+        setSchedulingConfig(null);
+      });
+  }, []);
 
   React.useEffect(() => {
-    console.log('%c[SchedulingFlow] Cargando lista de médicos desde /api/doctors…', 'color:#4285F4');
+    console.log('[SchedulingFlow] 👨‍⚕️ Cargando lista de médicos desde /api/doctors...');
     apiFetch('/api/doctors')
       .then((res: unknown) => {
         const list = res as Array<{
@@ -691,10 +735,10 @@ export default function SchedulingFlow() {
           nextAvailable: '',
           initials: d.fullName.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase(),
         })));
-        console.log(`%c[SchedulingFlow] Médicos cargados: ${list.length} registros`, 'color:#0F9D58');
+        console.log(`[SchedulingFlow] ✅ ${list.length} médicos cargados`);
       })
       .catch((err: unknown) => {
-        console.error('[SchedulingFlow] ❌ No se pudo cargar la lista de médicos:', err);
+        console.error('[SchedulingFlow] ❌ Error cargando médicos:', err);
         setDoctors([]);
       });
   }, []);
@@ -705,18 +749,18 @@ export default function SchedulingFlow() {
       return;
     }
     let cancelled = false;
-    console.log(`%c[SchedulingFlow] Pidiendo slots → doctorId=${form.doctor.id}, fecha=${form.date}`, 'color:#4285F4');
+    console.log(`[SchedulingFlow] 📅 Solicitando slots - Doctor: ${form.doctor.id}, Fecha: ${form.date}`);
     apiFetch(`/api/scheduling/slots?doctorId=${form.doctor.id}&date=${form.date}`)
       .then((res: unknown) => {
         if (!cancelled) {
           const slots = (res as { slots: string[] }).slots ?? [];
-          console.log(`%c[SchedulingFlow] Slots disponibles (${slots.length}):`, 'color:#0F9D58', slots);
+          console.log(`[SchedulingFlow] ✅ ${slots.length} slots disponibles`);
           setApiSlots(slots);
         }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          console.error('[SchedulingFlow] ❌ Error al cargar slots:', err);
+          console.error('[SchedulingFlow] ❌ Error cargando slots:', err);
           setApiSlots([]);
         }
       });
@@ -734,31 +778,55 @@ export default function SchedulingFlow() {
 
   const [submitError, setSubmitError] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
+
   const handleNext = async () => {
     if (step === 4 && canProceed()) {
       const auth = getAuth();
       if (!auth || auth.role !== 'Patient') {
+        console.warn('[SchedulingFlow] ⚠️ No autenticado como paciente');
         setSubmitError('Debes iniciar sesión como paciente para confirmar');
         return;
       }
       setSubmitting(true);
       setSubmitError('');
+
+      // Incluir captchaToken (CA3.5 - mock)
       const payload = {
         doctorId: form.doctor!.id,
         date: form.date,
         time: form.time,
+        captchaToken: 'mock-token-valido', // Mock válido para esta iteración
       };
-      console.log('%c[SchedulingFlow] Confirmando cita (paciente)…', 'color:#4285F4', payload);
+
+      console.log('[SchedulingFlow] 📤 Enviando confirmación de cita:', payload);
+
       try {
-        await apiFetch('/api/patient/appointments', {
+        const response = await apiFetch('/api/patient/appointments', {
           method: 'POST',
           body: JSON.stringify(payload),
-        });
-        console.log('%c[SchedulingFlow] ✅ Cita confirmada exitosamente', 'color:#0F9D58');
+        }) as { appointmentId: string; message: string; date: string; time: string; doctorName: string; specialty: string };
+
+        console.log('[SchedulingFlow] ✅ Cita confirmada exitosamente - ID:', response.appointmentId);
         setStep(5);
       } catch (err) {
-        console.error('[SchedulingFlow] ❌ Error al confirmar la cita:', err);
-        setSubmitError(err instanceof Error ? err.message : 'Error al confirmar la cita');
+        console.error('[SchedulingFlow] ❌ Error al confirmar cita:', err);
+
+        // Manejo específico de errores (CA3.7 y otros)
+        const errorMessage = err instanceof Error ? err.message : 'Error al confirmar la cita';
+
+        if (errorMessage.includes('anti-bot') || errorMessage.includes('verificación')) {
+          setSubmitError('Error en la verificación anti-bot. Por favor intenta de nuevo.');
+        } else if (errorMessage.includes('fecha pasada')) {
+          setSubmitError('No se puede agendar una cita en una fecha pasada.');
+        } else if (errorMessage.includes('ya tienes una cita') || errorMessage.includes('Ya tienes')) {
+          setSubmitError('Ya tienes una cita agendada con este profesional ese día.');
+        } else if (errorMessage.includes('Slot no disponible') || errorMessage.includes('ocupado')) {
+          setSubmitError('El horario seleccionado ya no está disponible. Por favor elige otro.');
+        } else if (errorMessage.includes('médico es obligatorio')) {
+          setSubmitError('Debe seleccionar un médico.');
+        } else {
+          setSubmitError(errorMessage);
+        }
       } finally {
         setSubmitting(false);
       }
@@ -801,9 +869,22 @@ export default function SchedulingFlow() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="rounded-2xl p-6 sm:p-8 shadow-sm" style={{ background: COLORS.white }}>
+          {/* Advertencia de autenticación requerida (CA3.1) */}
+          {authChecked && !getAuth() && step < 5 && (
+            <div className="flex items-center gap-2 rounded-xl px-4 py-3 mb-6" style={{ background: COLORS.warningLight, border: `1px solid ${COLORS.warning}` }}>
+              <AlertCircle size={18} style={{ color: COLORS.warning }} />
+              <div className="flex-1">
+                <p style={{ color: COLORS.warning, fontWeight: 600, fontSize: 14 }}>Autenticación requerida</p>
+                <p style={{ color: '#5D4037', fontSize: 13 }}>
+                  Debes <a href="/login" className="underline hover:no-underline" style={{ color: COLORS.blue, fontWeight: 600 }}>iniciar sesión</a> como paciente para confirmar la cita en el último paso.
+                </p>
+              </div>
+            </div>
+          )}
+
           {step === 1 && <Step1 form={form} setForm={setForm} />}
           {step === 2 && <Step2 form={form} setForm={setForm} doctors={doctors} />}
-          {step === 3 && <Step3 form={form} setForm={setForm} timeSlots={apiSlots} occupiedSlots={[]} />}
+          {step === 3 && <Step3 form={form} setForm={setForm} timeSlots={apiSlots} occupiedSlots={[]} config={schedulingConfig} />}
           {step === 4 && <Step4 form={form} setForm={setForm} />}
           {step === 5 && <Step5 form={form} />}
 

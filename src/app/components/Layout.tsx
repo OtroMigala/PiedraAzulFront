@@ -59,23 +59,13 @@ export function Layout() {
     return () => clearInterval(intervalId);
   }, [navigate]);
 
-  // Obtener rol del authStore
-  const backendRole = getRole();
+  // Rol derivado directamente del authStore (solo lectura, no modificable desde la UI)
+  const role = mapBackendRoleToComponentRole(getRole());
   const fullName = getFullName();
-  const [role, setRole] = React.useState<Role>(mapBackendRoleToComponentRole(backendRole));
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [isNewAppointmentModalOpen, setNewAppointmentModalOpen] = React.useState(false);
   const [doctors, setDoctors] = React.useState<{ id: number; name: string }[]>([]);
   const title = PAGE_TITLES[location.pathname] || 'Piedrazul';
-
-  // Sincronizar el rol si cambia en authStore
-  React.useEffect(() => {
-    const currentBackendRole = getRole();
-    const mappedRole = mapBackendRoleToComponentRole(currentBackendRole);
-    if (mappedRole !== role) {
-      setRole(mappedRole);
-    }
-  }, [location.pathname]); // Verificar en cada cambio de ruta
 
   React.useEffect(() => {
     apiFetch('/api/doctors').then((res: any) => {
@@ -89,7 +79,6 @@ export function Layout() {
     <div className="flex h-screen overflow-hidden" style={{ background: COLORS.bg }}>
       <Sidebar
         role={role}
-        onRoleChange={setRole}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onNewAppointmentClick={() => setNewAppointmentModalOpen(true)}
@@ -99,7 +88,7 @@ export function Layout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Topbar onMenuClick={() => setSidebarOpen(true)} pageTitle={title} />
         <main className="flex-1 overflow-y-auto">
-          <Outlet context={{ role, setRole }} />
+          <Outlet context={{ role }} />
         </main>
       </div>
 
