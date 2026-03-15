@@ -1,10 +1,11 @@
 import React from 'react';
-import { NavLink } from 'react-router';
+import { NavLink, useNavigate } from 'react-router';
 import {
-  Calendar, Users, UserCheck, LayoutDashboard, ClipboardList,
+  Calendar, UserCheck, LayoutDashboard, ClipboardList,
   BarChart2, LogOut, ChevronDown, Shield, FileText, X, Menu
 } from 'lucide-react';
 import { COLORS } from '../data/mockData';
+import { clearAuth } from '../store/authStore';
 
 type Role = 'admin' | 'doctor' | 'scheduler' | 'patient';
 
@@ -13,12 +14,15 @@ interface SidebarProps {
   onRoleChange: (role: Role) => void;
   isOpen: boolean;
   onClose: () => void;
+  onNewAppointmentClick: () => void;
+  userFullName?: string;
 }
 
-const ROLE_MENUS: Record<Role, { label: string; icon: React.ReactNode; path: string }[]> = {
+const ROLE_MENUS: Record<Role, { label: string; icon: React.ReactNode; path?: string; action?: () => void }[]> = {
   admin: [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
-    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/schedule' },
+    { label: 'Citas por Médico', icon: <ClipboardList size={20} />, path: '/citas-por-medico' },
+    { label: 'Agendar Cita', icon: <Calendar size={20} />, action: undefined },
     { label: 'Agenda Diaria', icon: <ClipboardList size={20} />, path: '/agenda' },
     { label: 'Médicos/Terapistas', icon: <UserCheck size={20} />, path: '/doctors' },
     { label: 'Historial Clínico', icon: <FileText size={20} />, path: '/history' },
@@ -31,7 +35,8 @@ const ROLE_MENUS: Record<Role, { label: string; icon: React.ReactNode; path: str
     { label: 'Reportes', icon: <BarChart2 size={20} />, path: '/reports' },
   ],
   scheduler: [
-    { label: 'Agendar Cita', icon: <Calendar size={20} />, path: '/schedule' },
+    { label: 'Citas por Médico', icon: <ClipboardList size={20} />, path: '/citas-por-medico' },
+    { label: 'Agendar Cita', icon: <Calendar size={20} />, action: undefined },
     { label: 'Agenda del Día', icon: <ClipboardList size={20} />, path: '/agenda' },
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
   ],
@@ -41,11 +46,12 @@ const ROLE_MENUS: Record<Role, { label: string; icon: React.ReactNode; path: str
   ],
 };
 
-const ROLE_LABELS: Record<Role, string> = {
+// Etiquetas por defecto si no se proporciona el nombre del usuario
+const DEFAULT_ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrador',
-  doctor: 'Dr. Andrés Pulido',
-  scheduler: 'Laura Jiménez',
-  patient: 'María González',
+  doctor: 'Doctor',
+  scheduler: 'Agendador',
+  patient: 'Paciente',
 };
 
 const ROLE_BADGE_LABELS: Record<Role, string> = {
@@ -62,9 +68,23 @@ const ROLE_BADGE_COLORS: Record<Role, string> = {
   patient: '#F57C00',
 };
 
-export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
+export function Sidebar({ role, onRoleChange, isOpen, onClose, onNewAppointmentClick, userFullName }: SidebarProps) {
+  const navigate = useNavigate();
   const [showRoleMenu, setShowRoleMenu] = React.useState(false);
-  const menu = ROLE_MENUS[role];
+  const menu = ROLE_MENUS[role].map((item) =>
+    item.action === undefined && !item.path
+      ? { ...item, action: onNewAppointmentClick }
+      : item
+  );
+
+  // Usar el nombre del usuario si está disponible, si no usar el label por defecto
+  const displayName = userFullName || DEFAULT_ROLE_LABELS[role];
+
+  const handleLogout = () => {
+    console.log('[Sidebar] Cerrando sesión...');
+    clearAuth();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <>
@@ -108,11 +128,11 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ background: ROLE_BADGE_COLORS[role] }}>
               <span className="text-white text-sm" style={{ fontWeight: 700 }}>
-                {ROLE_LABELS[role].substring(0, 2).toUpperCase()}
+                {displayName.substring(0, 2).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 text-left">
-              <div className="text-white text-sm truncate" style={{ fontWeight: 500 }}>{ROLE_LABELS[role]}</div>
+              <div className="text-white text-sm truncate" style={{ fontWeight: 500 }}>{displayName}</div>
               <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: ROLE_BADGE_COLORS[role] + '33', color: ROLE_BADGE_COLORS[role] }}>
                 {ROLE_BADGE_LABELS[role]}
               </span>
@@ -130,7 +150,7 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
                 >
                   <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: ROLE_BADGE_COLORS[r] }} />
                   <span className="text-sm" style={{ color: r === role ? 'white' : 'rgba(255,255,255,0.6)' }}>
-                    {ROLE_BADGE_LABELS[r]} – {ROLE_LABELS[r]}
+                    {ROLE_BADGE_LABELS[r]}
                   </span>
                 </button>
               ))}
@@ -145,22 +165,32 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
           </div>
           <ul className="flex flex-col gap-1">
             {menu.map((item) => (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-sm ${
-                      isActive
-                        ? 'text-white'
-                        : 'text-white/60 hover:text-white hover:bg-white/10'
-                    }`
-                  }
-                  style={({ isActive }) => isActive ? { background: COLORS.blue } : {}}
-                >
-                  {item.icon}
-                  {item.label}
-                </NavLink>
+              <li key={item.label}>
+                {item.path ? (
+                  <NavLink
+                    to={item.path}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-sm ${
+                        isActive
+                          ? 'text-white'
+                          : 'text-white/60 hover:text-white hover:bg-white/10'
+                      }`
+                    }
+                    style={({ isActive }) => isActive ? { background: COLORS.blue } : {}}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </NavLink>
+                ) : (
+                  <button
+                    onClick={() => { item.action?.(); onClose(); }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-sm text-white/60 hover:text-white hover:bg-white/10"
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -168,13 +198,13 @@ export function Sidebar({ role, onRoleChange, isOpen, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="px-3 py-4" style={{ borderTop: `1px solid rgba(255,255,255,0.1)` }}>
-          <NavLink
-            to="/login"
-            className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all"
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all"
           >
             <LogOut size={20} />
             Cerrar sesión
-          </NavLink>
+          </button>
         </div>
       </aside>
     </>

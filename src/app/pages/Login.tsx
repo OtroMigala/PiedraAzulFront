@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { Eye, EyeOff, Lock, User, AlertCircle, Shield } from 'lucide-react';
 import { COLORS } from '../data/mockData';
+import { apiFetch } from '../services/api';
+import { saveAuth, extractRoleFromToken, extractFullNameFromToken } from '../store/authStore';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,7 +14,7 @@ export default function Login() {
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Por favor ingresa tu usuario y contraseña.');
@@ -20,10 +22,46 @@ export default function Login() {
     }
     setError('');
     setLoading(true);
-    setTimeout(() => {
+    console.log(`%c[Login] Intentando iniciar sesión con usuario: "${email}"`, 'color:#4285F4');
+    try {
+      const data = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username: email, password }),
+      }) as { token: string; role?: string; fullName?: string; expiresAt?: string };
+
+      // Extraer rol y nombre del token si no vienen en la respuesta
+      const role = data.role || extractRoleFromToken(data.token) || '';
+      const fullName = data.fullName || extractFullNameFromToken(data.token) || '';
+
+      console.log(`%c[Login] ✅ Autenticación exitosa — rol: ${role}, usuario: ${fullName}, expira: ${data.expiresAt || 'N/A'}`, 'color:#0F9D58');
+      saveAuth({ token: data.token, role, fullName });
+
+      // Redirigir según el rol
+      const redirectPath = getRedirectPathByRole(role);
+      console.log(`%c[Login] Redirigiendo a ${redirectPath}`, 'color:#4285F4');
+      navigate(redirectPath);
+    } catch (err) {
+      console.error('[Login] ❌ Fallo en autenticación:', err);
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 1200);
+    }
+  };
+
+  // Función para determinar la ruta de redirección según el rol
+  const getRedirectPathByRole = (role: string): string => {
+    switch (role) {
+      case 'Admin':
+        return '/dashboard';
+      case 'Doctor':
+        return '/agenda';
+      case 'Scheduler':
+        return '/citas-por-medico';
+      case 'Patient':
+        return '/schedule';
+      default:
+        return '/dashboard';
+    }
   };
 
   return (

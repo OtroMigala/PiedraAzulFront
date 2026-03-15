@@ -6,13 +6,27 @@ import {
   Shield, Download, RefreshCw, Home, Check, AlertCircle, X
 } from 'lucide-react';
 import { ProgressSteps } from '../components/ProgressSteps';
-import { COLORS, DOCTORS, TIME_SLOTS, OCCUPIED_SLOTS, SPECIALTIES } from '../data/mockData';
+import { COLORS, SPECIALTIES } from '../data/mockData';
+import { apiFetch } from '../services/api';
+import { getAuth } from '../store/authStore';
 
 const STEPS = ['Especialidad', 'Profesional', 'Fecha y Hora', 'Confirmación'];
 
+interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  type: string;
+  interval: number;
+  status: string;
+  photo: string;
+  nextAvailable: string;
+  initials: string;
+}
+
 type FormState = {
   specialty: string | null;
-  doctor: typeof DOCTORS[0] | null;
+  doctor: Doctor | null;
   date: string | null;
   time: string | null;
   email: string;
@@ -27,21 +41,63 @@ const SPECIALTY_ICONS: Record<string, React.ReactNode> = {
   fisio: <Activity size={36} />,
 };
 
-// Mini calendar for demo
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-const MONTH_DAYS = Array.from({ length: 28 }, (_, i) => i + 1);
-const DISABLED_DAYS = [1, 2, 8, 9, 15, 16, 22, 23]; // weekends-like
-const HOLIDAY_DAYS = [10];
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelect: (d: string) => void }) {
+  const today = new Date();
+  const [viewYear, setViewYear] = React.useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = React.useState(today.getMonth()); // 0-indexed
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay(); // 0=Dom
+  const allDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
+  };
+
+  const isPast = (day: number) => {
+    const d = new Date(viewYear, viewMonth, day);
+    d.setHours(0, 0, 0, 0);
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    return d < t;
+  };
+  const isWeekend = (day: number) => {
+    const dow = new Date(viewYear, viewMonth, day).getDay();
+    return dow === 0 || dow === 6;
+  };
+  const toDateStr = (day: number) =>
+    `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const todayDay = today.getFullYear() === viewYear && today.getMonth() === viewMonth ? today.getDate() : -1;
+
+  // Prevent navigating before current month
+  const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+
   return (
     <div className="rounded-xl p-4" style={{ background: COLORS.white, border: `1px solid ${COLORS.border}` }}>
       <div className="flex items-center justify-between mb-3">
-        <button className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" style={{ color: COLORS.textLight }}>
+        <button
+          onClick={prevMonth}
+          disabled={isCurrentMonth}
+          className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          style={{ color: COLORS.textLight }}
+        >
           <ChevronLeft size={16} />
         </button>
-        <span style={{ color: COLORS.text, fontWeight: 600, fontSize: 14 }}>Febrero 2025</span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" style={{ color: COLORS.textLight }}>
+        <span style={{ color: COLORS.text, fontWeight: 600, fontSize: 14 }}>
+          {MONTH_NAMES[viewMonth]} {viewYear}
+        </span>
+        <button
+          onClick={nextMonth}
+          className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+          style={{ color: COLORS.textLight }}
+        >
           <ChevronRight size={16} />
         </button>
       </div>
@@ -53,35 +109,28 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
-        {/* offset */}
-        {[0, 1, 2, 3, 4].map(i => <div key={`off-${i}`} />)}
-        {MONTH_DAYS.map(day => {
-          const isDisabled = DISABLED_DAYS.includes(day);
-          const isHoliday = HOLIDAY_DAYS.includes(day);
-          const dateStr = `2025-02-${String(day).padStart(2, '0')}`;
+        {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`off-${i}`} />)}
+        {allDays.map(day => {
+          const disabled = isPast(day) || isWeekend(day);
+          const dateStr = toDateStr(day);
           const isSelected = selected === dateStr;
-          const isToday = day === 20;
+          const isTodayDay = day === todayDay;
 
           return (
             <button
               key={day}
-              disabled={isDisabled}
-              onClick={() => !isDisabled && onSelect(dateStr)}
+              disabled={disabled}
+              onClick={() => !disabled && onSelect(dateStr)}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-all text-sm mx-auto"
               style={{
-                background: isSelected ? COLORS.blue : isToday && !isSelected ? COLORS.blueLight : 'transparent',
-                color: isSelected ? 'white' : isDisabled ? COLORS.gray : isHoliday ? COLORS.error : isToday ? COLORS.blue : COLORS.text,
-                opacity: isDisabled ? 0.4 : 1,
-                cursor: isDisabled ? 'not-allowed' : 'pointer',
-                fontWeight: isSelected || isToday ? 700 : 400,
-                position: 'relative',
+                background: isSelected ? COLORS.blue : isTodayDay && !isSelected ? COLORS.blueLight : 'transparent',
+                color: isSelected ? 'white' : disabled ? COLORS.gray : isTodayDay ? COLORS.blue : COLORS.text,
+                opacity: disabled ? 0.4 : 1,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                fontWeight: isSelected || isTodayDay ? 700 : 400,
               }}
-              title={isHoliday ? 'Festivo' : isDisabled ? 'No disponible' : ''}
             >
               {day}
-              {isHoliday && !isSelected && (
-                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full" style={{ background: COLORS.error }} />
-              )}
             </button>
           );
         })}
@@ -90,13 +139,6 @@ function MiniCalendar({ selected, onSelect }: { selected: string | null; onSelec
         <div className="flex items-center gap-1.5">
           <div className="w-3.5 h-3.5 rounded-full" style={{ background: COLORS.grayLight }} />
           <span style={{ fontSize: 12, color: COLORS.gray }}>No disponible</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3.5 h-3.5 rounded-full relative">
-            <div className="w-3.5 h-3.5 rounded-full" style={{ background: 'white', border: `1px solid ${COLORS.border}` }} />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ background: COLORS.error }} />
-          </div>
-          <span style={{ fontSize: 12, color: COLORS.gray }}>Festivo</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3.5 h-3.5 rounded-full" style={{ background: COLORS.blue }} />
@@ -152,12 +194,12 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
 }
 
 // Step 2
-function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
+function Step2({ form, setForm, doctors }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>>; doctors: Doctor[] }) {
   const [search, setSearch] = React.useState('');
   const [filterType, setFilterType] = React.useState('Todos');
-  const filtered = DOCTORS.filter(
+  const filtered = doctors.filter(
     (d) =>
-      (!form.specialty || d.specialty === SPECIALTIES.find((s) => s.id === form.specialty)?.name) &&
+      (!form.specialty || d.specialty === form.specialty) &&
       (filterType === 'Todos' || d.type === filterType) &&
       d.name.toLowerCase().includes(search.toLowerCase()) &&
       d.status === 'Activo'
@@ -202,7 +244,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
       <div className="flex flex-col gap-3">
         {filtered.map((doctor) => {
           const isSelected = form.doctor?.id === doctor.id;
-          const sp = SPECIALTIES.find((s) => s.name === doctor.specialty);
+          const sp = SPECIALTIES.find((s) => s.id === doctor.specialty);
           return (
             <div
               key={doctor.id}
@@ -227,7 +269,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                     {doctor.type}
                   </span>
                 </div>
-                <p className="text-sm" style={{ color: COLORS.textLight }}>{doctor.specialty}</p>
+                <p className="text-sm" style={{ color: COLORS.textLight }}>{sp?.name ?? doctor.specialty}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <Clock size={13} style={{ color: COLORS.green }} />
                   <span style={{ fontSize: 13, color: COLORS.green, fontWeight: 600 }}>
@@ -276,7 +318,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
 }
 
 // Step 3
-function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
+function Step3({ form, setForm, timeSlots, occupiedSlots }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>>; timeSlots: string[]; occupiedSlots: string[] }) {
   return (
     <div>
       <h2 className="text-xl mb-1" style={{ color: COLORS.text, fontWeight: 700 }}>Selecciona fecha y hora</h2>
@@ -317,8 +359,8 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           ) : (
             <div className="rounded-xl p-4" style={{ background: COLORS.white, border: `1px solid ${COLORS.border}` }}>
               <div className="grid grid-cols-3 gap-2">
-                {TIME_SLOTS.map((slot) => {
-                  const isOccupied = OCCUPIED_SLOTS.includes(slot);
+                {timeSlots.map((slot) => {
+                  const isOccupied = occupiedSlots.includes(slot);
                   const isSelected = form.time === slot;
                   return (
                     <button
@@ -627,6 +669,60 @@ export default function SchedulingFlow() {
     observations: '',
     termsAccepted: false,
   });
+  const [doctors, setDoctors] = React.useState<Doctor[]>([]);
+  const [apiSlots, setApiSlots] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    console.log('%c[SchedulingFlow] Cargando lista de médicos desde /api/doctors…', 'color:#4285F4');
+    apiFetch('/api/doctors')
+      .then((res: unknown) => {
+        const list = res as Array<{
+          id: string; fullName: string; specialty: string;
+          type: string; intervalMinutes: number; isActive?: boolean;
+        }>;
+        setDoctors(list.map(d => ({
+          id: d.id,
+          name: d.fullName,
+          specialty: ({ NeuralTherapy: 'neural', Chiropractic: 'quiro', Physiotherapy: 'fisio' } as Record<string, string>)[d.specialty] ?? d.specialty,
+          type: d.type === 'Doctor' ? 'Médico' : 'Terapista',
+          interval: d.intervalMinutes,
+          status: d.isActive === false ? 'Inactivo' : 'Activo',
+          photo: '',
+          nextAvailable: '',
+          initials: d.fullName.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase(),
+        })));
+        console.log(`%c[SchedulingFlow] Médicos cargados: ${list.length} registros`, 'color:#0F9D58');
+      })
+      .catch((err: unknown) => {
+        console.error('[SchedulingFlow] ❌ No se pudo cargar la lista de médicos:', err);
+        setDoctors([]);
+      });
+  }, []);
+
+  React.useEffect(() => {
+    if (!form.doctor || !form.date) {
+      setApiSlots([]);
+      return;
+    }
+    let cancelled = false;
+    console.log(`%c[SchedulingFlow] Pidiendo slots → doctorId=${form.doctor.id}, fecha=${form.date}`, 'color:#4285F4');
+    apiFetch(`/api/scheduling/slots?doctorId=${form.doctor.id}&date=${form.date}`)
+      .then((res: unknown) => {
+        if (!cancelled) {
+          const slots = (res as { slots: string[] }).slots ?? [];
+          console.log(`%c[SchedulingFlow] Slots disponibles (${slots.length}):`, 'color:#0F9D58', slots);
+          setApiSlots(slots);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          console.error('[SchedulingFlow] ❌ Error al cargar slots:', err);
+          setApiSlots([]);
+        }
+      });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.doctor?.id, form.date]);
 
   const canProceed = () => {
     if (step === 1) return !!form.specialty;
@@ -636,7 +732,38 @@ export default function SchedulingFlow() {
     return false;
   };
 
-  const handleNext = () => {
+  const [submitError, setSubmitError] = React.useState('');
+  const [submitting, setSubmitting] = React.useState(false);
+  const handleNext = async () => {
+    if (step === 4 && canProceed()) {
+      const auth = getAuth();
+      if (!auth || auth.role !== 'Patient') {
+        setSubmitError('Debes iniciar sesión como paciente para confirmar');
+        return;
+      }
+      setSubmitting(true);
+      setSubmitError('');
+      const payload = {
+        doctorId: form.doctor!.id,
+        date: form.date,
+        time: form.time,
+      };
+      console.log('%c[SchedulingFlow] Confirmando cita (paciente)…', 'color:#4285F4', payload);
+      try {
+        await apiFetch('/api/patient/appointments', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        console.log('%c[SchedulingFlow] ✅ Cita confirmada exitosamente', 'color:#0F9D58');
+        setStep(5);
+      } catch (err) {
+        console.error('[SchedulingFlow] ❌ Error al confirmar la cita:', err);
+        setSubmitError(err instanceof Error ? err.message : 'Error al confirmar la cita');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
     if (canProceed()) setStep((s) => Math.min(s + 1, 5));
   };
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
@@ -675,14 +802,20 @@ export default function SchedulingFlow() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="rounded-2xl p-6 sm:p-8 shadow-sm" style={{ background: COLORS.white }}>
           {step === 1 && <Step1 form={form} setForm={setForm} />}
-          {step === 2 && <Step2 form={form} setForm={setForm} />}
-          {step === 3 && <Step3 form={form} setForm={setForm} />}
+          {step === 2 && <Step2 form={form} setForm={setForm} doctors={doctors} />}
+          {step === 3 && <Step3 form={form} setForm={setForm} timeSlots={apiSlots} occupiedSlots={[]} />}
           {step === 4 && <Step4 form={form} setForm={setForm} />}
           {step === 5 && <Step5 form={form} />}
 
+          {submitError && step === 4 && (
+            <div className="flex items-center gap-2 rounded-lg px-4 py-3 mt-6" style={{ background: COLORS.errorLight, color: COLORS.error }}>
+              <AlertCircle size={16} />
+              <span style={{ fontSize: 14 }}>{submitError}</span>
+            </div>
+          )}
           {/* Navigation buttons */}
           {step < 5 && (
-            <div className="flex items-center justify-between mt-8 pt-6" style={{ borderTop: `1px solid ${COLORS.border}` }}>
+            <div className="flex items-center justify-between mt-6 pt-6" style={{ borderTop: `1px solid ${COLORS.border}` }}>
               <button
                 onClick={handleBack}
                 disabled={step === 1}
@@ -709,11 +842,11 @@ export default function SchedulingFlow() {
 
               <button
                 onClick={handleNext}
-                disabled={!canProceed()}
+                disabled={!canProceed() || submitting}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: COLORS.blue, fontSize: 14, fontWeight: 600 }}
               >
-                {step === 4 ? 'Confirmar cita' : 'Continuar'}
+                {step === 4 ? (submitting ? 'Enviando...' : 'Confirmar cita') : 'Continuar'}
                 <ChevronRight size={16} />
               </button>
             </div>

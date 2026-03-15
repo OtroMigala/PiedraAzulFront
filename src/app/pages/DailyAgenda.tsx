@@ -4,7 +4,8 @@ import {
   RefreshCw, Filter, X, User, Phone, FileText, AlertCircle, Check,
   Clock, Edit2, Mail
 } from 'lucide-react';
-import { COLORS, APPOINTMENTS, APPOINTMENTS_TODAY, DOCTORS, PATIENTS } from '../data/mockData';
+import { COLORS, APPOINTMENTS_TODAY, DOCTORS, PATIENTS } from '../data/mockData';
+import { apiFetch } from '../services/api';
 
 // Helper: get Spanish day name from date string
 function getDayName(dateStr: string): string {
@@ -37,11 +38,20 @@ function generateTimeSlotsForDoctor(doctorName: string, dateStr: string): string
   return slots;
 }
 
-// Helper: get occupied slots for a doctor on a given date
-function getOccupiedSlots(doctorName: string, dateStr: string): string[] {
-  return APPOINTMENTS
-    .filter(a => a.doctor === doctorName && a.date === dateStr && a.status !== 'Cancelada')
-    .map(a => a.time);
+// Helper: occupied slots (kept for NewAppointmentModal compatibility; backend handles exclusion)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getOccupiedSlots(_doctorName: string, _dateStr: string): string[] {
+  return [];
+}
+
+// Helper: convert AM/PM slot string (e.g. "7:00 AM") to "HH:MM:SS" for the API
+function formatTimeForApi(time: string): string {
+  const [timePart, period] = time.split(' ');
+  const [h, m] = timePart.split(':').map(Number);
+  let hours = h;
+  if (period === 'AM' && h === 12) hours = 0;
+  if (period === 'PM' && h !== 12) hours = h + 12;
+  return `${String(hours).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -49,12 +59,31 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   Completada: { bg: COLORS.greenLight, text: COLORS.green },
   Pendiente: { bg: '#FFF3E0', text: '#E65100' },
   Cancelada: { bg: COLORS.errorLight, text: COLORS.error },
+  Scheduled: { bg: '#E3F2FD', text: COLORS.blue },
+  Completed: { bg: COLORS.greenLight, text: COLORS.green },
+  Pending: { bg: '#FFF3E0', text: '#E65100' },
+  Cancelled: { bg: COLORS.errorLight, text: COLORS.error },
 };
 
 type ModalType = 'new' | 'reschedule' | 'detail' | null;
 
+interface Appointment {
+  id: number;
+  date: string;
+  time: string;
+  patient: string;
+  document: string;
+  phone: string;
+  specialty: string;
+  doctor: string;
+  doctorId?: number;
+  observation: string;
+  status: string;
+  color: string;
+}
+
 interface RescheduleModalProps {
-  appointment: typeof APPOINTMENTS[0];
+  appointment: Appointment;
   onClose: () => void;
 }
 
@@ -247,17 +276,21 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
 
 interface NewAppointmentModalProps {
   onClose: () => void;
+  doctors: { id: number; name: string }[];
+  onSuccess?: () => void;
 }
 
-function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
+export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointmentModalProps) {
   const [search, setSearch] = React.useState('');
   const [foundPatient, setFoundPatient] = React.useState<typeof PATIENTS[0] | null>(null);
   const [newPatient, setNewPatient] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState('');
 
   const [form, setForm] = React.useState({
     document: '', names: '', phone: '', gender: '', birthDate: '', email: '',
-    doctor: '', date: '', time: '', observations: '', saveToHistory: false,
+    doctor: '', doctorId: '', date: '', time: '', observations: '', saveToHistory: false,
   });
   const [conflictError, setConflictError] = React.useState('');
 
@@ -271,44 +304,72 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
     else setNewPatient(true);
   };
 
-  // Dynamic slot generation based on selected doctor and date
-  const dynamicSlots = React.useMemo(
-    () => form.doctor && form.date ? generateTimeSlotsForDoctor(form.doctor, form.date) : [],
-    [form.doctor, form.date]
-  );
+  // Dynamic slot generation — fixed Mon–Fri slots
+  const dynamicSlots = React.useMemo(() => {
+    if (!form.doctorId || !form.date) return [];
+    const day = new Date(form.date + 'T12:00:00').getDay();
+    if (day === 0 || day === 6) return []; // weekend
+    return [
+      '7:00 AM','7:20 AM','7:40 AM','8:00 AM','8:20 AM','8:40 AM',
+      '9:00 AM','9:20 AM','9:40 AM','10:00 AM','10:20 AM','10:40 AM',
+      '11:00 AM','11:20 AM','11:40 AM','12:00 PM',
+    ];
+  }, [form.doctorId, form.date]);
 
   // Occupied slots for the selected doctor on the selected date
   const occupiedSlots = React.useMemo(
-    () => form.doctor && form.date ? getOccupiedSlots(form.doctor, form.date) : [],
-    [form.doctor, form.date]
+    () => form.doctorId && form.date ? getOccupiedSlots(form.doctorId, form.date) : [],
+    [form.doctorId, form.date]
   );
 
-  // Get selected doctor's info for schedule hints
-  const selectedDoctor = React.useMemo(
-    () => DOCTORS.find(d => d.name === form.doctor),
-    [form.doctor]
-  );
+  const GENDER_MAP: Record<string, number> = { Masculino: 0, Femenino: 1, Otro: 2 };
 
-  // Check if doctor works on the selected date
-  const doctorWorksOnDate = React.useMemo(() => {
-    if (!form.doctor || !form.date) return true;
-    const dayName = getDayName(form.date);
-    const doctor = DOCTORS.find(d => d.name === form.doctor);
-    return !!doctor?.schedule[dayName as keyof typeof doctor.schedule];
-  }, [form.doctor, form.date]);
-
-  const handleSave = () => {
-    // Validate schedule conflict
-    if (form.doctor && form.date && form.time) {
-      const occupied = getOccupiedSlots(form.doctor, form.date);
-      if (occupied.includes(form.time)) {
-        setConflictError(`La franja ${form.time} ya está ocupada para ${form.doctor} en esa fecha.`);
-        return;
-      }
+  const handleSave = async () => {
+    if (!form.doctorId || !form.date || !form.time) {
+      setConflictError('Selecciona médico, fecha y hora.');
+      return;
     }
     setConflictError('');
-    setSaved(true);
-    setTimeout(onClose, 1500);
+    setSubmitError('');
+    setSubmitting(true);
+
+    const doctorObj = doctors.find((d) => String(d.id) === form.doctorId);
+    const patientDoc = foundPatient ? foundPatient.document.replace(/\./g, '') : form.document;
+    const patientName = foundPatient ? foundPatient.name : form.names;
+    const patientPhone = foundPatient ? foundPatient.phone : form.phone;
+    const rawGender = foundPatient ? foundPatient.gender : form.gender;
+    const genderValue = GENDER_MAP[rawGender] ?? 0;
+    const rawBirth = foundPatient ? foundPatient.birthDate : form.birthDate;
+    const birthDateValue = rawBirth ? `${rawBirth}T00:00:00` : null;
+    const emailValue = form.email || null;
+
+    const payload = {
+      documentId: patientDoc,
+      fullName: patientName,
+      phone: patientPhone,
+      gender: genderValue,
+      birthDate: birthDateValue,
+      email: emailValue,
+      doctorId: doctorObj?.id,
+      date: `${form.date}T00:00:00`,
+      time: formatTimeForApi(form.time),
+    };
+    console.log('%c[DailyAgenda] Registrando nueva cita…', 'color:#4285F4', payload);
+
+    try {
+      await apiFetch('/api/appointments', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      console.log('%c[DailyAgenda] ✅ Cita registrada exitosamente', 'color:#0F9D58');
+      setSaved(true);
+      setTimeout(() => { onClose(); onSuccess?.(); }, 1500);
+    } catch (err) {
+      console.error('[DailyAgenda] ❌ Error al registrar la cita:', err);
+      setSubmitError(err instanceof Error ? err.message : 'Error al registrar la cita');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -453,23 +514,21 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                   </label>
                   <div className="relative">
                     <select
-                      value={form.doctor}
-                      onChange={(e) => setForm((f) => ({ ...f, doctor: e.target.value, time: '' }))}
+                      value={form.doctorId}
+                      onChange={(e) => {
+                        const sel = doctors.find((d) => String(d.id) === e.target.value);
+                        setForm((f) => ({ ...f, doctorId: e.target.value, doctor: sel?.name ?? '', time: '' }));
+                      }}
                       className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
                       style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                     >
                       <option value="">Seleccionar...</option>
-                      {DOCTORS.filter((d) => d.status === 'Activo').map((d) => (
-                        <option key={d.id}>{d.name} ({d.interval} min)</option>
+                      {doctors.map((d) => (
+                        <option key={d.id} value={String(d.id)}>{d.name}</option>
                       ))}
                     </select>
                     <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: COLORS.gray }} />
                   </div>
-                  {selectedDoctor && (
-                    <p className="mt-1" style={{ fontSize: 12, color: COLORS.blue }}>
-                      Intervalo: {selectedDoctor.interval} min · Atiende: {Object.keys(selectedDoctor.schedule).join(', ')}
-                    </p>
-                  )}
                 </div>
                 <div>
                   <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
@@ -482,11 +541,6 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
                     className="w-full px-3 py-2.5 rounded-lg outline-none"
                     style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
                   />
-                  {form.doctor && form.date && !doctorWorksOnDate && (
-                    <p className="flex items-center gap-1 mt-1" style={{ color: COLORS.error, fontSize: 12 }}>
-                      <AlertCircle size={12} /> {form.doctor.split(' ').slice(0, 3).join(' ')} no atiende los {getDayName(form.date).toLowerCase()}
-                    </p>
-                  )}
                 </div>
                 <div>
                   <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
@@ -551,9 +605,16 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
             </div>
 
             {/* Actions */}
+            {submitError && (
+              <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ background: COLORS.errorLight, color: COLORS.error }}>
+                <AlertCircle size={16} />
+                <span style={{ fontSize: 13 }}>{submitError}</span>
+              </div>
+            )}
             <div className="flex gap-3 pt-2" style={{ borderTop: `1px solid ${COLORS.border}` }}>
               <button
                 onClick={onClose}
+                disabled={submitting}
                 className="flex-1 py-2.5 rounded-xl border hover:bg-gray-50 transition-colors"
                 style={{ borderColor: COLORS.border, color: COLORS.textLight, fontSize: 14, fontWeight: 600 }}
               >
@@ -561,10 +622,11 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 py-2.5 rounded-xl text-white hover:opacity-90 transition-all"
+                disabled={submitting}
+                className="flex-1 py-2.5 rounded-xl text-white hover:opacity-90 transition-all disabled:opacity-60"
                 style={{ background: COLORS.blue, fontSize: 14, fontWeight: 700 }}
               >
-                Agendar cita
+                {submitting ? 'Guardando...' : 'Agendar cita'}
               </button>
             </div>
           </div>
@@ -576,18 +638,87 @@ function NewAppointmentModal({ onClose }: NewAppointmentModalProps) {
 
 export default function DailyAgenda() {
   const [modal, setModal] = React.useState<ModalType>(null);
-  const [selectedAppt, setSelectedAppt] = React.useState<typeof APPOINTMENTS[0] | null>(null);
+  const [selectedAppt, setSelectedAppt] = React.useState<Appointment | null>(null);
   const [search, setSearch] = React.useState('');
   const [filterDoctor, setFilterDoctor] = React.useState('Todos');
   const [filterType, setFilterType] = React.useState('Todos');
-  const [selectedDate, setSelectedDate] = React.useState('2025-02-20');
+  const [selectedDate, setSelectedDate] = React.useState(() => new Date().toISOString().split('T')[0]);
+  const [total, setTotal] = React.useState(0);
+  const [appointments, setAppointments] = React.useState<Appointment[]>([]);
+  const [loadingAppts, setLoadingAppts] = React.useState(false);
+  const [doctorsFromApi, setDoctorsFromApi] = React.useState<{ id: number; name: string; type: string; status: string }[]>([]);
+  const [doctorsError, setDoctorsError] = React.useState('');
 
-  // Build a lookup of doctor name -> type from DOCTORS data
+  React.useEffect(() => {
+    setDoctorsError('');
+    console.log('%c[DailyAgenda] Cargando médicos desde /api/doctors…', 'color:#4285F4');
+    apiFetch('/api/doctors')
+      .then((res: unknown) => {
+        const list = res as Array<{ id: number; fullName: string; type: string; isActive: boolean }>;
+        if (!Array.isArray(list)) {
+          console.error('[DailyAgenda] ❌ La respuesta de /api/doctors no es un array:', list);
+          setDoctorsError('Respuesta inesperada del servidor al cargar médicos');
+          return;
+        }
+        const seen = new Set<number>();
+        setDoctorsFromApi(
+          list
+            .filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; })
+            .map(d => ({
+              id: d.id,
+              name: d.fullName ?? '',
+              type: d.type === 'Doctor' ? 'Médico' : 'Terapista',
+              status: d.isActive ? 'Activo' : 'Inactivo',
+            }))
+        );
+        console.log(`%c[DailyAgenda] Médicos cargados: ${list.length} registros`, 'color:#0F9D58');
+      })
+      .catch((err: unknown) => {
+        console.error('[DailyAgenda] ❌ Error al cargar médicos:', err);
+        setDoctorsError(err instanceof Error ? err.message : 'Error al cargar médicos');
+        setDoctorsFromApi([]);
+      });
+  }, []);
+
+  React.useEffect(() => {
+    setLoadingAppts(true);
+    console.log(`%c[DailyAgenda] Cargando citas para la fecha: ${selectedDate}`, 'color:#4285F4');
+    apiFetch(`/api/appointments?date=${selectedDate}`)
+      .then((res: unknown) => {
+        const list = res.appointments as Array<{
+          id: number; date: string; time: string; patientName: string;
+          documentId: string; phone: string; specialty: string;
+          doctorName: string; doctorId: number; observation: string; status: string;
+        }>;
+        setAppointments(list.sort((a, b) => a.time.localeCompare(b.time)).map(a => ({
+          id: a.id,
+          date: a.date,
+          time: a.time,
+          patient: a.patientName,
+          document: a.documentId,
+          phone: a.phone,
+          specialty: a.specialty,
+          doctor: a.doctorName,
+          doctorId: a.doctorId,
+          observation: a.observation,
+          status: a.status,
+          color: COLORS.blue,
+        })));
+        console.log(`%c[DailyAgenda] Citas del ${selectedDate}: ${list.length} registros`, 'color:#0F9D58', list);
+      })
+      .catch((err: unknown) => {
+        console.error(`[DailyAgenda] ❌ Error al cargar citas para ${selectedDate}:`, err);
+        setAppointments([]);
+      })
+      .finally(() => setLoadingAppts(false));
+  }, [selectedDate]);
+
+  // Build a lookup of doctor name -> type from API doctors
   const doctorTypeMap = React.useMemo(() => {
     const map: Record<string, string> = {};
-    DOCTORS.forEach((d) => { map[d.name] = d.type; });
+    doctorsFromApi.forEach((d) => { map[d.name] = d.type; });
     return map;
-  }, []);
+  }, [doctorsFromApi]);
 
   // Format selected date for display
   const formattedDate = React.useMemo(() => {
@@ -597,9 +728,8 @@ export default function DailyAgenda() {
     });
   }, [selectedDate]);
 
-  const filtered = APPOINTMENTS.filter(
+  const filtered = appointments.filter(
     (a) =>
-      a.date === selectedDate &&
       (filterDoctor === 'Todos' || a.doctor === filterDoctor) &&
       (filterType === 'Todos' || doctorTypeMap[a.doctor] === filterType) &&
       (a.patient.toLowerCase().includes(search.toLowerCase()) ||
@@ -632,6 +762,14 @@ export default function DailyAgenda() {
           </button>
         </div>
       </div>
+
+      {/* Doctors fetch error */}
+      {doctorsError && (
+        <div className="flex items-center gap-2 rounded-xl px-4 py-3 mb-4" style={{ background: COLORS.errorLight, color: COLORS.error }}>
+          <AlertCircle size={16} />
+          <span style={{ fontSize: 14 }}>Médicos: {doctorsError}</span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3" style={{ background: COLORS.white, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
@@ -672,7 +810,7 @@ export default function DailyAgenda() {
               style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg, minWidth: 180 }}
             >
               <option>Todos</option>
-              {DOCTORS.filter((d) => d.status === 'Activo' && (filterType === 'Todos' || d.type === filterType)).map((d) => (
+              {doctorsFromApi.filter(d => d.status === 'Activo' && (filterType === 'Todos' || d.type === filterType)).map((d) => (
                 <option key={d.id}>{d.name}</option>
               ))}
             </select>
@@ -707,14 +845,16 @@ export default function DailyAgenda() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((appt, idx) => (
+              {filtered.sort((a, b) => a.time.localeCompare(b.time)).map((appt, idx) => (
                 <tr
                   key={appt.id}
                   className="hover:bg-blue-50/30 transition-colors"
                   style={{ borderTop: `1px solid ${COLORS.border}` }}
                 >
                   <td className="px-4 py-3">
-                    <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>{appt.time}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.text }}>
+                      {new Date(`1970-01-01T${appt.time}`).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -790,15 +930,19 @@ export default function DailyAgenda() {
           </table>
         </div>
 
-        {filtered.length === 0 && (
+        {loadingAppts ? (
+          <div className="text-center py-12">
+            <p style={{ color: COLORS.gray }}>Cargando...</p>
+          </div>
+        ) : total === 0 && (
           <div className="text-center py-12">
             <Calendar size={40} className="mx-auto mb-3" style={{ color: COLORS.gray, opacity: 0.4 }} />
-            <p style={{ color: COLORS.gray }}>No hay citas agendadas para este filtro</p>
+            <p style={{ color: COLORS.gray }}>No hay citas registradas para esta búsqueda</p>
           </div>
         )}
 
         <div className="px-4 py-3 flex items-center justify-between" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-          <span style={{ fontSize: 13, color: COLORS.textLight }}>{filtered.length} citas encontradas</span>
+          <span style={{ fontSize: 13, color: COLORS.textLight }}>{total} cita(s) encontrada(s)</span>
           <button className="flex items-center gap-1.5 text-sm hover:text-blue-700 transition-colors" style={{ color: COLORS.blue, fontWeight: 600 }}>
             <RefreshCw size={13} />
             Actualizar
@@ -807,7 +951,38 @@ export default function DailyAgenda() {
       </div>
 
       {/* Modals */}
-      {modal === 'new' && <NewAppointmentModal onClose={() => setModal(null)} />}
+      {modal === 'new' && (
+        <NewAppointmentModal
+          onClose={() => setModal(null)}
+          doctors={doctorsFromApi}
+          onSuccess={() => {
+            apiFetch(`/api/appointments?date=${selectedDate}`)
+              .then((res: unknown) => {
+                const list = res.appointments as Array<{
+                  id: number; date: string; time: string; patientName: string;
+                  documentId: string; phone: string; specialty: string;
+                  doctorName: string; doctorId: number; observation: string; status: string;
+                }>;
+                setAppointments(list.sort((a, b) => a.time.localeCompare(b.time)).map(a => ({
+                  id: a.id,
+                  date: a.date,
+                  time: a.time,
+                  patient: a.patientName,
+                  document: a.documentId,
+                  phone: a.phone,
+                  specialty: a.specialty,
+                  doctor: a.doctorName,
+                  doctorId: a.doctorId,
+                  observation: a.observation,
+                  status: a.status,
+                  color: COLORS.blue,
+                })));
+                setTotal(res.total || 0);
+              })
+              .catch(() => {});
+          }}
+        />
+      )}
       {modal === 'reschedule' && selectedAppt && (
         <RescheduleModal appointment={selectedAppt} onClose={() => { setModal(null); setSelectedAppt(null); }} />
       )}
