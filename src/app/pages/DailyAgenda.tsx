@@ -4,7 +4,7 @@ import {
   RefreshCw, Filter, X, User, Phone, FileText, AlertCircle, Check,
   Clock, Edit2, Mail
 } from 'lucide-react';
-import { COLORS, APPOINTMENTS_TODAY, DOCTORS, PATIENTS } from '../data/mockData';
+import { COLORS, APPOINTMENTS_TODAY, DOCTORS } from '../data/mockData';
 import { apiFetch } from '../services/api';
 
 // Helper: get Spanish day name from date string
@@ -54,6 +54,14 @@ function formatTimeForApi(time: string): string {
   return `${String(hours).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
 }
 
+// Helper: convert "HH:MM:SS" (API) → "H:MM AM/PM" (display)
+function parseTimeFromApi(time: string): string {
+  const [h, m] = time.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   Confirmada: { bg: '#E3F2FD', text: COLORS.blue },
   Completada: { bg: COLORS.greenLight, text: COLORS.green },
@@ -76,7 +84,7 @@ interface Appointment {
   phone: string;
   specialty: string;
   doctor: string;
-  doctorId?: number;
+  doctorId?: string;
   observation: string;
   status: string;
   color: string;
@@ -276,17 +284,20 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
 
 interface NewAppointmentModalProps {
   onClose: () => void;
-  doctors: { id: number; name: string }[];
+  doctors: { id: string; name: string }[];
   onSuccess?: () => void;
 }
 
 export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointmentModalProps) {
   const [search, setSearch] = React.useState('');
-  const [foundPatient, setFoundPatient] = React.useState<typeof PATIENTS[0] | null>(null);
+  const [foundPatient, setFoundPatient] = React.useState<{
+    document: string; name: string; phone: string; age: number; gender: string; birthDate: string;
+  } | null>(null);
   const [newPatient, setNewPatient] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState('');
+  const [searching, setSearching] = React.useState(false);
 
   const [form, setForm] = React.useState({
     document: '', names: '', phone: '', gender: '', birthDate: '', email: '',
@@ -298,29 +309,70 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
     ? Math.floor((Date.now() - new Date(form.birthDate).getTime()) / (365.25 * 24 * 3600 * 1000))
     : '';
 
-  const handleSearch = () => {
-    const found = PATIENTS.find((p) => p.document.replace(/\./g, '') === search.replace(/\./g, ''));
-    if (found) setFoundPatient(found);
-    else setNewPatient(true);
+  const handleSearch = async () => {
+    if (!search.trim()) return;
+    setSearching(true);
+    setFoundPatient(null);
+    setNewPatient(false);
+    try {
+      const res = await apiFetch(
+        `/api/patients/by-document?documentId=${encodeURIComponent(search.replace(/\./g, ''))}`
+      );
+      const p = res as { documentId: string; fullName: string; phone: string; birthDate: string; gender: number };
+      const birthDate = p.birthDate ? p.birthDate.split('T')[0] : '';
+      const age = birthDate
+        ? Math.floor((Date.now() - new Date(birthDate).getTime()) / (365.25 * 24 * 3600 * 1000))
+        : 0;
+      setFoundPatient({
+        document: p.documentId,
+        name: p.fullName,
+        phone: p.phone,
+        age,
+        gender: (['Masculino', 'Femenino', 'Otro'][p.gender] ?? 'Otro'),
+        birthDate,
+      });
+    } catch {
+      // 404 → paciente no existe, habilitar registro nuevo
+      setNewPatient(true);
+    } finally {
+      setSearching(false);
+    }
   };
 
-  // Dynamic slot generation — fixed Mon–Fri slots
-  const dynamicSlots = React.useMemo(() => {
-    if (!form.doctorId || !form.date) return [];
-    const day = new Date(form.date + 'T12:00:00').getDay();
-    if (day === 0 || day === 6) return []; // weekend
-    return [
-      '7:00 AM','7:20 AM','7:40 AM','8:00 AM','8:20 AM','8:40 AM',
-      '9:00 AM','9:20 AM','9:40 AM','10:00 AM','10:20 AM','10:40 AM',
-      '11:00 AM','11:20 AM','11:40 AM','12:00 PM',
-    ];
-  }, [form.doctorId, form.date]);
+  // Slots desde API — ya filtrados (sin ocupados) y alineados al intervalo del médico
+  const [dynamicSlots, setDynamicSlots] = React.useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = React.useState(false);
+  const [slotsError, setSlotsError] = React.useState('');
 
-  // Occupied slots for the selected doctor on the selected date
-  const occupiedSlots = React.useMemo(
-    () => form.doctorId && form.date ? getOccupiedSlots(form.doctorId, form.date) : [],
-    [form.doctorId, form.date]
-  );
+  React.useEffect(() => {
+    if (!form.doctorId || !form.date) { setDynamicSlots([]); setSlotsError(''); return; }
+    setLoadingSlots(true);
+    setDynamicSlots([]);
+    setSlotsError('');
+    apiFetch(`/api/scheduling/slots?doctorId=${form.doctorId}&date=${form.date}`)
+      .then((res: unknown) => {
+        const asObj = res as { slots?: string[] };
+        const raw = Array.isArray(res) ? (res as string[]) : (Array.isArray(asObj?.slots) ? asObj.slots : []);
+        if (raw.length === 0) {
+          // Fallback: generar franjas localmente desde los datos del médico
+          const localSlots = generateTimeSlotsForDoctor(form.doctor, form.date);
+          setDynamicSlots(localSlots);
+          if (localSlots.length === 0) setSlotsError('No hay franjas disponibles para este médico en la fecha seleccionada.');
+        } else {
+          setDynamicSlots(raw.map(parseTimeFromApi));
+        }
+      })
+      .catch(() => {
+        // Fallback local cuando la API no está disponible
+        const localSlots = generateTimeSlotsForDoctor(form.doctor, form.date);
+        setDynamicSlots(localSlots);
+        if (localSlots.length === 0) setSlotsError('No se pudieron cargar las franjas horarias.');
+      })
+      .finally(() => setLoadingSlots(false));
+  }, [form.doctorId, form.date, form.doctor]);
+
+  // El backend filtra ocupados; lista vacía para compatibilidad del render
+  const occupiedSlots: string[] = [];
 
   const GENDER_MAP: Record<string, number> = { Masculino: 0, Femenino: 1, Otro: 2 };
 
@@ -333,7 +385,7 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
     setSubmitError('');
     setSubmitting(true);
 
-    const doctorObj = doctors.find((d) => String(d.id) === form.doctorId);
+    const doctorObj = doctors.find((d) => d.id === form.doctorId);
     const patientDoc = foundPatient ? foundPatient.document.replace(/\./g, '') : form.document;
     const patientName = foundPatient ? foundPatient.name : form.names;
     const patientPhone = foundPatient ? foundPatient.phone : form.phone;
@@ -416,10 +468,11 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
                 </div>
                 <button
                   onClick={handleSearch}
-                  className="px-4 py-2.5 rounded-lg text-white hover:opacity-90"
+                  disabled={searching}
+                  className="px-4 py-2.5 rounded-lg text-white hover:opacity-90 disabled:opacity-60"
                   style={{ background: COLORS.blue, fontWeight: 600, fontSize: 14 }}
                 >
-                  Buscar
+                  {searching ? 'Buscando…' : 'Buscar'}
                 </button>
               </div>
             </div>
@@ -516,7 +569,7 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
                     <select
                       value={form.doctorId}
                       onChange={(e) => {
-                        const sel = doctors.find((d) => String(d.id) === e.target.value);
+                        const sel = doctors.find((d) => d.id === e.target.value);
                         setForm((f) => ({ ...f, doctorId: e.target.value, doctor: sel?.name ?? '', time: '' }));
                       }}
                       className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
@@ -524,7 +577,7 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
                     >
                       <option value="">Seleccionar...</option>
                       {doctors.map((d) => (
-                        <option key={d.id} value={String(d.id)}>{d.name}</option>
+                        <option key={d.id} value={d.id}>{d.name}</option>
                       ))}
                     </select>
                     <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: COLORS.gray }} />
@@ -550,11 +603,13 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
                     <select
                       value={form.time}
                       onChange={(e) => { setForm((f) => ({ ...f, time: e.target.value })); setConflictError(''); }}
-                      disabled={dynamicSlots.length === 0}
+                      disabled={loadingSlots || dynamicSlots.length === 0}
                       className="w-full px-3 py-2.5 rounded-lg outline-none appearance-none"
-                      style={{ border: `1.5px solid ${conflictError ? COLORS.error : COLORS.border}`, fontSize: 14, color: COLORS.text, background: dynamicSlots.length === 0 ? COLORS.grayLight : COLORS.bg }}
+                      style={{ border: `1.5px solid ${conflictError ? COLORS.error : COLORS.border}`, fontSize: 14, color: COLORS.text, background: (loadingSlots || dynamicSlots.length === 0) ? COLORS.grayLight : COLORS.bg }}
                     >
-                      <option value="">{dynamicSlots.length === 0 ? 'Seleccione médico y fecha primero' : 'Seleccionar horario...'}</option>
+                      <option value="">
+                        {loadingSlots ? 'Cargando franjas…' : dynamicSlots.length === 0 ? 'Seleccione médico y fecha primero' : 'Seleccionar horario...'}
+                      </option>
                       {dynamicSlots.map((s) => {
                         const isOccupied = occupiedSlots.includes(s);
                         return (
@@ -568,7 +623,12 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
                   </div>
                   {dynamicSlots.length > 0 && (
                     <p className="mt-1" style={{ fontSize: 12, color: COLORS.gray }}>
-                      {dynamicSlots.length} franjas · {occupiedSlots.length} ocupadas · {dynamicSlots.length - occupiedSlots.length} disponibles
+                      {dynamicSlots.length} franja(s) disponible(s)
+                    </p>
+                  )}
+                  {slotsError && (
+                    <p className="mt-1" style={{ fontSize: 12, color: COLORS.error }}>
+                      {slotsError}
                     </p>
                   )}
                 </div>
@@ -646,7 +706,7 @@ export default function DailyAgenda() {
   const [total, setTotal] = React.useState(0);
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
   const [loadingAppts, setLoadingAppts] = React.useState(false);
-  const [doctorsFromApi, setDoctorsFromApi] = React.useState<{ id: number; name: string; type: string; status: string }[]>([]);
+  const [doctorsFromApi, setDoctorsFromApi] = React.useState<{ id: string; name: string; type: string; status: string }[]>([]);
   const [doctorsError, setDoctorsError] = React.useState('');
 
   React.useEffect(() => {
@@ -654,13 +714,13 @@ export default function DailyAgenda() {
     console.log('%c[DailyAgenda] Cargando médicos desde /api/doctors…', 'color:#4285F4');
     apiFetch('/api/doctors')
       .then((res: unknown) => {
-        const list = res as Array<{ id: number; fullName: string; type: string; isActive: boolean }>;
+        const list = res as Array<{ id: string; fullName: string; type: string; isActive: boolean }>;
         if (!Array.isArray(list)) {
           console.error('[DailyAgenda] ❌ La respuesta de /api/doctors no es un array:', list);
           setDoctorsError('Respuesta inesperada del servidor al cargar médicos');
           return;
         }
-        const seen = new Set<number>();
+        const seen = new Set<string>();
         setDoctorsFromApi(
           list
             .filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; })
