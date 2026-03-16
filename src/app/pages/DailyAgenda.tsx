@@ -685,12 +685,8 @@ export default function DailyAgenda() {
     console.log(`%c[DailyAgenda] Cargando citas para la fecha: ${selectedDate}`, 'color:#4285F4');
     apiFetch(`/api/appointments?date=${selectedDate}`)
       .then((res: unknown) => {
-        const list = res.appointments as Array<{
-          id: number; date: string; time: string; patientName: string;
-          documentId: string; phone: string; specialty: string;
-          doctorName: string; doctorId: number; observation: string; status: string;
-        }>;
-        setAppointments(list.sort((a, b) => a.time.localeCompare(b.time)).map(a => ({
+        const list = Array.isArray(res) ? res as Array<any> : [];
+        setAppointments(list.map(a => ({
           id: a.id,
           date: a.date,
           time: a.time,
@@ -958,12 +954,8 @@ export default function DailyAgenda() {
           onSuccess={() => {
             apiFetch(`/api/appointments?date=${selectedDate}`)
               .then((res: unknown) => {
-                const list = res.appointments as Array<{
-                  id: number; date: string; time: string; patientName: string;
-                  documentId: string; phone: string; specialty: string;
-                  doctorName: string; doctorId: number; observation: string; status: string;
-                }>;
-                setAppointments(list.sort((a, b) => a.time.localeCompare(b.time)).map(a => ({
+                const list = Array.isArray(res) ? res as Array<any> : [];
+                setAppointments(list.map(a => ({
                   id: a.id,
                   date: a.date,
                   time: a.time,
@@ -977,7 +969,7 @@ export default function DailyAgenda() {
                   status: a.status,
                   color: COLORS.blue,
                 })));
-                setTotal(res.total || 0);
+                setTotal(list.length);
               })
               .catch(() => {});
           }}
