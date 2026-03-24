@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { Eye, EyeOff, Lock, User, AlertCircle, Shield } from 'lucide-react';
 import { COLORS } from '../data/mockData';
+import piedrazulLogo from '../../assetis/media/piedrazulLogo.png';
 import { apiFetch } from '../services/api';
 import { saveAuth, extractRoleFromToken, extractFullNameFromToken, extractIdFromToken, clearAuth } from '../store/authStore';
 
@@ -91,12 +92,7 @@ export default function Login() {
         <div className="rounded-2xl p-8 shadow-2xl" style={{ background: COLORS.white }}>
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)` }}
-            >
-              <span className="text-white text-2xl" style={{ fontWeight: 800 }}>P</span>
-            </div>
+            <img src={piedrazulLogo} alt="Piedrazul" className="w-40 h-40 object-contain mb-1" />
             <h1 className="text-2xl" style={{ color: COLORS.text, fontWeight: 700 }}>Piedrazul</h1>
             <p style={{ color: COLORS.textLight, fontSize: 15 }}>Centro Médico de Medicina Alternativa</p>
           </div>
