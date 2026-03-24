@@ -1,8 +1,6 @@
-interface AuthData {
-  token: string;
-  role: string;
-  fullName: string;
-}
+import type { AuthData, UserRole } from '../types/auth.types';
+
+export type { AuthData, UserRole };
 
 // Fallback en memoria para cuando localStorage está bloqueado (ej: Edge InPrivate)
 let _memAuth: AuthData | null = null;
@@ -24,6 +22,7 @@ export function saveAuth(data: AuthData): void {
   lsSet('token', data.token);
   lsSet('role', data.role);
   lsSet('fullName', data.fullName);
+  lsSet('userId', data.id);
 }
 
 export function getAuth(): AuthData | null {
@@ -33,6 +32,7 @@ export function getAuth(): AuthData | null {
       token,
       role: lsGet('role') ?? '',
       fullName: lsGet('fullName') ?? '',
+      id: lsGet('userId') ?? '',
     };
   }
   // localStorage bloqueado: usar el valor en memoria
@@ -44,13 +44,14 @@ export function clearAuth(): void {
   lsRemove('token');
   lsRemove('role');
   lsRemove('fullName');
+  lsRemove('userId');
 }
 
 export function isAuthenticated(): boolean {
   return !!lsGet('token') || !!_memAuth;
 }
 
-export function getRole(): 'Admin' | 'Scheduler' | 'Patient' | 'Doctor' | null {
+export function getRole(): UserRole | null {
   const role = lsGet('role') ?? _memAuth?.role ?? null;
   if (role === 'Admin' || role === 'Scheduler' || role === 'Patient' || role === 'Doctor') return role;
   return null;
@@ -58,6 +59,10 @@ export function getRole(): 'Admin' | 'Scheduler' | 'Patient' | 'Doctor' | null {
 
 export function getFullName(): string {
   return lsGet('fullName') ?? _memAuth?.fullName ?? '';
+}
+
+export function getUserId(): string {
+  return lsGet('userId') ?? _memAuth?.id ?? '';
 }
 
 // Decodifica el payload del JWT sin verificar firma (solo para leer datos)
@@ -78,12 +83,9 @@ export function extractRoleFromToken(token: string): string | null {
   const payload = decodeJWT(token);
   if (!payload) return null;
 
-  // El backend puede enviar el rol en diferentes formatos
-  // Buscamos en los campos m\u00e1s comunes
   return (
     (payload.role as string) ||
     (payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as string) ||
-    (payload['role'] as string) ||
     null
   );
 }
@@ -101,7 +103,20 @@ export function extractFullNameFromToken(token: string): string | null {
   );
 }
 
-// Verifica si el token est\u00e1 expirado
+// Extrae el ID del usuario del token JWT (claim 'sub' o 'id' o 'nameid')
+export function extractIdFromToken(token: string): string {
+  const payload = decodeJWT(token);
+  if (!payload) return '';
+
+  return (
+    (payload.sub as string) ||
+    (payload.id as string) ||
+    (payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] as string) ||
+    ''
+  );
+}
+
+// Verifica si el token está expirado
 export function isTokenExpired(): boolean {
   const auth = getAuth();
   if (!auth?.token) return true;
@@ -115,7 +130,7 @@ export function isTokenExpired(): boolean {
   return expTimestamp < nowTimestamp;
 }
 
-// Valida y renueva la autenticaci\u00f3n si es necesario
+// Valida y renueva la autenticación si es necesario
 export function validateAuth(): boolean {
   if (!isAuthenticated()) return false;
 

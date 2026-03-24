@@ -33,6 +33,7 @@ type FormState = {
   phone: string;
   observations: string;
   termsAccepted: boolean;
+  captchaVerified: boolean;
 };
 
 interface SchedulingConfig {
@@ -651,7 +652,7 @@ function Step5({ form }: { form: FormState }) {
           Descargar comprobante
         </button>
         <button
-          onClick={() => navigate('/schedule')}
+          onClick={() => navigate('/app/schedule')}
           className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border flex-1 hover:bg-blue-50 transition-colors"
           style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 14, fontWeight: 600 }}
         >
@@ -659,7 +660,7 @@ function Step5({ form }: { form: FormState }) {
           Agendar otra cita
         </button>
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/app/dashboard')}
           className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl flex-1 text-white hover:opacity-90 transition-all"
           style={{ background: COLORS.blue, fontSize: 14, fontWeight: 600 }}
         >
@@ -683,6 +684,7 @@ export default function SchedulingFlow() {
     phone: '',
     observations: '',
     termsAccepted: false,
+    captchaVerified: false,
   });
   const [doctors, setDoctors] = React.useState<Doctor[]>([]);
   const [apiSlots, setApiSlots] = React.useState<string[]>([]);

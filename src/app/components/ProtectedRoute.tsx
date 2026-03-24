@@ -1,14 +1,13 @@
 import { Navigate, Outlet } from 'react-router';
 import { getRole, validateAuth } from '../store/authStore';
-
-type AllowedRole = 'Admin' | 'Doctor' | 'Scheduler' | 'Patient';
+import type { UserRole } from '../types/auth.types';
 
 interface ProtectedRouteProps {
-  allowedRoles?: AllowedRole[];
+  allowedRoles?: UserRole[];
 }
 
 /** Ruta de inicio según el rol autenticado */
-function getHomePathByRole(role: string | null): string {
+function getHomePathByRole(role: UserRole | null): string {
   switch (role) {
     case 'Admin':     return '/app/dashboard';
     case 'Doctor':    return '/app/agenda';

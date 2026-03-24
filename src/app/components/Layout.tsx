@@ -5,6 +5,7 @@ import { NewAppointmentModal } from '../pages/DailyAgenda';
 import { apiFetch } from '../services/api';
 import { COLORS } from '../data/mockData';
 import { validateAuth, getRole, getFullName } from '../store/authStore';
+import type { DoctorApiItem } from '../types/doctor.types';
 
 type Role = 'admin' | 'doctor' | 'scheduler' | 'patient';
 
@@ -64,13 +65,13 @@ export function Layout() {
   const fullName = getFullName();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [isNewAppointmentModalOpen, setNewAppointmentModalOpen] = React.useState(false);
-  const [doctors, setDoctors] = React.useState<{ id: number; name: string }[]>([]);
+  const [doctors, setDoctors] = React.useState<{ id: string; name: string }[]>([]);
   const title = PAGE_TITLES[location.pathname] || 'Piedrazul';
 
   React.useEffect(() => {
-    apiFetch('/api/doctors').then((res: any) => {
+    apiFetch<DoctorApiItem[]>('/api/doctors').then((res) => {
       if (Array.isArray(res)) {
-        setDoctors(res.map((d: any) => ({ id: d.id, name: d.fullName })));
+        setDoctors(res.map((d) => ({ id: String(d.id), name: d.fullName })));
       }
     }).catch(() => {});
   }, []);

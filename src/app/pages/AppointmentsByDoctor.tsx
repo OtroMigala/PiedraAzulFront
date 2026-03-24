@@ -1,17 +1,31 @@
 import React from 'react';
 import {
-  Search, Download, ChevronDown, Calendar,
+  Search, ChevronDown, Calendar,
   RefreshCw, Filter, X, AlertCircle,
 } from 'lucide-react';
 import { COLORS } from '../data/mockData';
 import { apiFetch } from '../services/api';
 
+// Valores de status según la guía de API del backend
+const STATUS_LABELS: Record<string, string> = {
+  Scheduled:   'Agendada',
+  Completed:   'Completada',
+  Cancelled:   'Cancelada',
+  Rescheduled: 'Reprogramada',
+};
+
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  Scheduled: { bg: '#E3F2FD', text: COLORS.blue },
-  Completed: { bg: COLORS.greenLight, text: COLORS.green },
-  Pending: { bg: '#FFF3E0', text: '#E65100' },
-  Cancelled: { bg: COLORS.errorLight, text: COLORS.error },
-  Rescheduled: { bg: '#FFF9C4', text: '#F57F17' },
+  Scheduled:   { bg: '#E3F2FD',          text: COLORS.blue  },
+  Completed:   { bg: COLORS.greenLight,  text: COLORS.green },
+  Cancelled:   { bg: COLORS.errorLight,  text: COLORS.error },
+  Rescheduled: { bg: '#FFF9C4',          text: '#F57F17'    },
+};
+
+// Especialidades según la guía de API del backend
+const SPECIALTY_LABELS: Record<string, string> = {
+  NeuralTherapy:  'Terapia Neural',
+  Chiropractic:   'Quiropraxia',
+  Physiotherapy:  'Fisioterapia',
 };
 
 interface Appointment {
@@ -23,9 +37,16 @@ interface Appointment {
   status: string;
 }
 
+// id es UUID (string) según la guía de API del backend
 interface Doctor {
-  id: number;
+  id: string;
   fullName: string;
+}
+
+interface AppointmentsResponse {
+  message: string;
+  total: number;
+  appointments: Appointment[];
 }
 
 export default function AppointmentsByDoctor() {
@@ -43,15 +64,18 @@ export default function AppointmentsByDoctor() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
 
-  // Estado para búsqueda local en la tabla
+  // Término de búsqueda — se envía al backend como parámetro ?search=
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  // Fetch doctors
+  // Indica si ya se realizó al menos una búsqueda (controla visibilidad del buscador)
+  const [hasFetched, setHasFetched] = React.useState(false);
+
+  // Cargar lista de médicos activos al montar (el backend solo retorna IsActive = true)
   React.useEffect(() => {
     console.log('[AppointmentsByDoctor] Cargando lista de doctores...');
     setLoadingDoctors(true);
     apiFetch('/api/doctors')
-      .then((data: any) => {
+      .then((data: Doctor[]) => {
         console.log(`[AppointmentsByDoctor] ✅ ${data?.length || 0} doctores cargados`);
         setDoctors(data || []);
         setDoctorsError('');
@@ -64,22 +88,14 @@ export default function AppointmentsByDoctor() {
       .finally(() => setLoadingDoctors(false));
   }, []);
 
-  const handleFetchAppointments = () => {
-    if (!selectedDoctorId || !selectedDate) {
-      console.warn('[AppointmentsByDoctor] ⚠️ Filtros incompletos');
-      setMessage('Por favor, seleccione un profesional y una fecha.');
-      setAppointments([]);
-      setTotal(0);
-      return;
-    }
+  // Función principal de búsqueda — recibe los parámetros explícitamente para evitar stale closures
+  const fetchAppointments = React.useCallback((doctorId: string, date: string, search: string) => {
+    if (!doctorId || !date) return;
 
-    // Validar que la fecha no sea anterior a 1 año
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const selectedDateObj = new Date(selectedDate + 'T00:00:00');
-
-    if (selectedDateObj < oneYearAgo) {
-      console.warn('[AppointmentsByDoctor] ⚠️ Fecha anterior a 1 año:', selectedDate);
+    if (new Date(date + 'T00:00:00') < oneYearAgo) {
+      console.warn('[AppointmentsByDoctor] ⚠️ Fecha anterior a 1 año:', date);
       setError('La fecha no puede ser anterior a 1 año desde hoy.');
       setAppointments([]);
       setTotal(0);
@@ -87,18 +103,22 @@ export default function AppointmentsByDoctor() {
       return;
     }
 
-    console.log(`[AppointmentsByDoctor] 🔍 Buscando citas - Doctor: ${selectedDoctorId}, Fecha: ${selectedDate}`);
+    // Construir URL con parámetro search opcional (búsqueda server-side según guía de API)
+    const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+    const url = `/api/appointments/by-doctor?doctorId=${doctorId}&date=${date}${searchParam}`;
+
+    console.log(`[AppointmentsByDoctor] 🔍 Buscando - Doctor: ${doctorId}, Fecha: ${date}${search ? `, Búsqueda: "${search}"` : ''}`);
     setLoading(true);
     setError('');
     setMessage('');
 
-    apiFetch(`/api/appointments/by-doctor?doctorId=${selectedDoctorId}&date=${selectedDate}`)
-      .then((data: any) => {
+    apiFetch(url)
+      .then((data: AppointmentsResponse) => {
         console.log(`[AppointmentsByDoctor] ✅ ${data.total || 0} citas encontradas`);
         setAppointments(data.appointments || []);
         setTotal(data.total || 0);
-        setMessage(data.message || 'Respuesta sin mensaje.');
-        setSearchTerm(''); // Limpiar búsqueda local al obtener nuevos datos
+        setMessage(data.message || '');
+        setHasFetched(true);
       })
       .catch((err) => {
         console.error('[AppointmentsByDoctor] ❌ Error cargando citas:', err);
@@ -108,14 +128,24 @@ export default function AppointmentsByDoctor() {
         setMessage('');
       })
       .finally(() => setLoading(false));
-  };
-  
-  // Automatically fetch when filters change
+  }, []);
+
+  // Al cambiar médico o fecha: resetea el buscador y lanza una búsqueda nueva
   React.useEffect(() => {
     if (selectedDoctorId && selectedDate) {
-      handleFetchAppointments();
+      setSearchTerm('');
+      fetchAppointments(selectedDoctorId, selectedDate, '');
     }
   }, [selectedDoctorId, selectedDate]);
+
+  // Al escribir en el buscador: espera 400ms y llama al backend con ?search=
+  React.useEffect(() => {
+    if (!selectedDoctorId || !selectedDate || searchTerm === '') return;
+    const timer = setTimeout(() => {
+      fetchAppointments(selectedDoctorId, selectedDate, searchTerm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm, selectedDoctorId, selectedDate]);
 
   const formattedDate = React.useMemo(() => {
     if (!selectedDate) return '';
@@ -123,20 +153,6 @@ export default function AppointmentsByDoctor() {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     });
   }, [selectedDate]);
-
-  // Filtrar citas según el término de búsqueda local
-  const filteredAppointments = React.useMemo(() => {
-    if (!searchTerm.trim()) return appointments;
-
-    const term = searchTerm.toLowerCase();
-    const filtered = appointments.filter(appt =>
-      appt.patientName.toLowerCase().includes(term) ||
-      appt.documentId.toLowerCase().includes(term)
-    );
-
-    console.log(`[AppointmentsByDoctor] 🔍 Filtro local: "${searchTerm}" - ${filtered.length}/${appointments.length} resultados`);
-    return filtered;
-  }, [appointments, searchTerm]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8" style={{ background: COLORS.bg, minHeight: '100vh' }}>
@@ -148,7 +164,7 @@ export default function AppointmentsByDoctor() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filtros */}
       <div className="rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3" style={{ background: COLORS.white, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center gap-2 flex-1">
           <Filter size={15} style={{ color: COLORS.gray }} />
@@ -178,7 +194,7 @@ export default function AppointmentsByDoctor() {
           />
         </div>
         <button
-          onClick={handleFetchAppointments}
+          onClick={() => fetchAppointments(selectedDoctorId, selectedDate, searchTerm)}
           disabled={loading || !selectedDoctorId || !selectedDate}
           className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white hover:opacity-90 transition-all shadow-md disabled:opacity-50"
           style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)`, fontSize: 14, fontWeight: 700 }}
@@ -188,7 +204,7 @@ export default function AppointmentsByDoctor() {
         </button>
       </div>
 
-      {/* Info and Error Messages */}
+      {/* Mensajes de error */}
       {doctorsError && (
         <div className="flex items-center gap-2 rounded-xl px-4 py-3 mb-4" style={{ background: COLORS.errorLight, color: COLORS.error }}>
           <AlertCircle size={16} />
@@ -201,15 +217,10 @@ export default function AppointmentsByDoctor() {
           <span style={{ fontSize: 14 }}>{error}</span>
         </div>
       )}
-      {message && !error && (
-         <div className="flex items-center gap-2 rounded-xl px-4 py-3 mb-4" style={{ background: COLORS.blueLight, color: COLORS.blueDark }}>
-          <AlertCircle size={16} />
-          <span style={{ fontSize: 14, fontWeight: 500 }}>{message}</span>
-        </div>
-      )}
 
-      {/* Search bar for table - Only show when there are appointments */}
-      {total > 0 && (
+      {/* Buscador en tabla — visible tras la primera búsqueda exitosa
+          Al escribir, envía ?search= al backend (búsqueda server-side) */}
+      {hasFetched && !error && (
         <div className="rounded-2xl p-4 mb-4" style={{ background: COLORS.white, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center gap-2">
             <Search size={18} style={{ color: COLORS.gray }} />
@@ -233,20 +244,20 @@ export default function AppointmentsByDoctor() {
           </div>
           {searchTerm && (
             <p style={{ fontSize: 13, color: COLORS.textLight, marginTop: 8 }}>
-              {filteredAppointments.length} de {appointments.length} citas mostradas
+              {loading ? 'Buscando...' : `${total} resultado(s) para "${searchTerm}"`}
             </p>
           )}
         </div>
       )}
 
-      {/* Table */}
+      {/* Tabla — el backend ya devuelve las citas ordenadas por hora */}
       <div className="rounded-2xl overflow-hidden" style={{ background: COLORS.white, boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
-          {filteredAppointments.length > 0 && (
+          {appointments.length > 0 && (
             <table className="w-full">
               <thead>
                 <tr style={{ background: COLORS.bg }}>
-                  {['Hora', 'Paciente', 'Documento', 'Especialidad', 'Estado'].map((col) => (
+                  {['Hora', 'Paciente', 'Documento', 'Tipo de atención', 'Estado'].map((col) => (
                     <th
                       key={col}
                       className="px-4 py-3 text-left"
@@ -258,7 +269,7 @@ export default function AppointmentsByDoctor() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAppointments.sort((a, b) => a.time.localeCompare(b.time)).map((appt) => (
+                {appointments.map((appt) => (
                   <tr
                     key={appt.id}
                     className="hover:bg-blue-50/30 transition-colors"
@@ -274,19 +285,21 @@ export default function AppointmentsByDoctor() {
                       <span style={{ fontSize: 13, color: COLORS.textLight, fontFamily: 'monospace' }}>{appt.documentId}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.text }}>{appt.specialty}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.text }}>
+                        {SPECIALTY_LABELS[appt.specialty] ?? appt.specialty}
+                      </p>
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className="px-2.5 py-1 rounded-full text-xs"
                         style={{
-                          background: STATUS_COLORS[appt.status]?.bg || COLORS.grayLight,
-                          color: STATUS_COLORS[appt.status]?.text || COLORS.gray,
+                          background: STATUS_COLORS[appt.status]?.bg ?? COLORS.grayLight,
+                          color: STATUS_COLORS[appt.status]?.text ?? COLORS.gray,
                           fontWeight: 700,
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {appt.status}
+                        {STATUS_LABELS[appt.status] ?? appt.status}
                       </span>
                     </td>
                   </tr>
@@ -303,38 +316,28 @@ export default function AppointmentsByDoctor() {
           </div>
         )}
 
-        {!loading && total === 0 && selectedDoctorId && selectedDate && !error && (
+        {!loading && total === 0 && selectedDoctorId && selectedDate && !error && hasFetched && (
           <div className="text-center py-16">
             <Calendar size={48} className="mx-auto mb-3" style={{ color: COLORS.gray, opacity: 0.3 }} />
             <p style={{ color: COLORS.text, fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
-              No hay citas registradas
+              No hay citas registradas para esta búsqueda
             </p>
             <p style={{ color: COLORS.textLight, fontSize: 14 }}>
-              {message || 'No se encontraron citas para la búsqueda realizada'}
-            </p>
-          </div>
-        )}
-
-        {!loading && filteredAppointments.length === 0 && total > 0 && (
-          <div className="text-center py-12">
-            <Search size={48} className="mx-auto mb-3" style={{ color: COLORS.gray, opacity: 0.3 }} />
-            <p style={{ color: COLORS.text, fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
-              No se encontraron resultados
-            </p>
-            <p style={{ color: COLORS.textLight, fontSize: 14 }}>
-              Intenta con otro término de búsqueda
+              {message || 'Intente con otro profesional o fecha'}
             </p>
           </div>
         )}
 
         <div className="px-4 py-3 flex items-center justify-between" style={{ borderTop: `1px solid ${COLORS.border}` }}>
           <span style={{ fontSize: 13, color: COLORS.textLight }}>
-            {searchTerm ? `${filteredAppointments.length} de ${total}` : total} cita(s) {searchTerm ? 'mostradas' : 'encontradas'}
+            {total} cita(s) encontradas
           </span>
           <button
-            onClick={handleFetchAppointments}
+            onClick={() => fetchAppointments(selectedDoctorId, selectedDate, searchTerm)}
             disabled={loading || !selectedDoctorId || !selectedDate}
-            className="flex items-center gap-1.5 text-sm hover:text-blue-700 transition-colors disabled:opacity-50" style={{ color: COLORS.blue, fontWeight: 600 }}>
+            className="flex items-center gap-1.5 text-sm hover:text-blue-700 transition-colors disabled:opacity-50"
+            style={{ color: COLORS.blue, fontWeight: 600 }}
+          >
             <RefreshCw size={13} />
             Actualizar
           </button>
