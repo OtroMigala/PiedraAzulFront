@@ -1,5 +1,4 @@
-const BASE_URL = 'http://localhost:5071';
-
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5071';
 import { getAuth, clearAuth } from '../store/authStore';
 
 // ─────────────────────────────────────────────────────────────
@@ -63,46 +62,10 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
 
   // ── RESPUESTA ERROR HTTP ───────────────────────────────────
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-    let errorBody: unknown = null;
-    try {
-      errorBody = await response.json();
-      if (errorBody && typeof errorBody === 'object') {
-        message =
-          (errorBody as Record<string, string>).message ||
-          (errorBody as Record<string, string>).error ||
-          message;
-      }
-    } catch {
-      // cuerpo no es JSON, no pasa nada
-    }
-    console.error(
-      `%c🔴 ${response.status} ${response.statusText}  (${ms} ms)`,
-      S.error,
-    );
-    if (errorBody !== null) {
-      console.error('%cCuerpo de error devuelto por el back:', S.label, errorBody);
-    } else {
-      console.warn('%c(el back no devolvió JSON en el cuerpo del error)', S.warn);
-    }
-    console.error('%cMensaje final que se muestra al usuario:', S.label, message);
-
-    // ── MANEJO DE ERRORES DE AUTENTICACIÓN/AUTORIZACIÓN ────────
-    if (response.status === 401) {
-      console.warn('%c🔒 Error 401: No autenticado. Cerrando sesión y redirigiendo a login.', S.warn);
-      clearAuth();
-      // Redirigir a login solo si no estamos ya en la página de login
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-    } else if (response.status === 403) {
-      console.warn('%c🚫 Error 403: Sin permisos para acceder a este recurso.', S.warn);
-      message = 'No tienes permisos para realizar esta acción.';
-    }
-
-    console.groupEnd();
-    throw new Error(message);
-  }
+  const errorBody = await response.text();
+  console.error('Cuerpo de error devuelto por el back:', errorBody);
+  throw new Error(`Error ${response.status}: ${errorBody}`);
+}
 
   // ── RESPUESTA 204 No Content ───────────────────────────────
   if (response.status === 204) {
