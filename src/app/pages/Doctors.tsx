@@ -564,7 +564,7 @@ export default function Doctors() {
     try {
       setLoading(true);
       setError('');
-      const data = await apiFetch('/api/doctors/admin') as DoctorItem[];
+      const data = await apiFetch('/api/doctors?includeInactive=true') as DoctorItem[];
       setDoctors(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error cargando profesionales.');
