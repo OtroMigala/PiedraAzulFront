@@ -12,7 +12,7 @@ const S = {
   label:   'color:#888;font-size:11px',
 };
 
-export async function apiFetch(path: string, options: RequestInit = {}): Promise<unknown> {
+export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getAuth()?.token ?? null;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   }
 
   // ── RESPUESTA OK CON CUERPO ────────────────────────────────
-  const data: unknown = await response.json();
+  const data = await response.json() as T;
   console.log(`%c✅ ${response.status} ${response.statusText}  (${ms} ms)`, S.ok);
   console.log('%cRespuesta del back:', S.label, data);
   console.groupEnd();

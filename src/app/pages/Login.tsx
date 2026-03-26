@@ -2,8 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { Eye, EyeOff, Lock, User, AlertCircle, Shield } from 'lucide-react';
 import { COLORS } from '../data/mockData';
+import piedrazulLogo from '../../assetis/media/piedrazulLogo.png';
 import { apiFetch } from '../services/api';
-import { saveAuth, extractRoleFromToken, extractFullNameFromToken, clearAuth } from '../store/authStore';
+import { saveAuth, extractRoleFromToken, extractFullNameFromToken, extractIdFromToken, clearAuth } from '../store/authStore';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -35,12 +36,13 @@ export default function Login() {
         body: JSON.stringify({ username: email, password }),
       }) as { token: string; role?: string; fullName?: string; expiresAt?: string };
 
-      // Extraer rol y nombre del token si no vienen en la respuesta
+      // Extraer rol, nombre e id del token si no vienen en la respuesta
       const role = data.role || extractRoleFromToken(data.token) || '';
       const fullName = data.fullName || extractFullNameFromToken(data.token) || '';
+      const id = extractIdFromToken(data.token);
 
-      console.log(`%c[Login] ✅ Autenticación exitosa — rol: ${role}, usuario: ${fullName}, expira: ${data.expiresAt || 'N/A'}`, 'color:#0F9D58');
-      saveAuth({ token: data.token, role, fullName });
+      console.log(`%c[Login] ✅ Autenticación exitosa — rol: ${role}, usuario: ${fullName}, id: ${id}, expira: ${data.expiresAt || 'N/A'}`, 'color:#0F9D58');
+      saveAuth({ token: data.token, role, fullName, id });
 
       // Redirigir según el rol
       const redirectPath = getRedirectPathByRole(role);
@@ -90,12 +92,7 @@ export default function Login() {
         <div className="rounded-2xl p-8 shadow-2xl" style={{ background: COLORS.white }}>
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)` }}
-            >
-              <span className="text-white text-2xl" style={{ fontWeight: 800 }}>P</span>
-            </div>
+            <img src={piedrazulLogo} alt="Piedrazul" className="w-40 h-40 object-contain mb-1" />
             <h1 className="text-2xl" style={{ color: COLORS.text, fontWeight: 700 }}>Piedrazul</h1>
             <p style={{ color: COLORS.textLight, fontSize: 15 }}>Centro Médico de Medicina Alternativa</p>
           </div>
@@ -231,14 +228,22 @@ export default function Login() {
             <div className="flex-1 h-px" style={{ background: COLORS.border }} />
           </div>
 
-          {/* Patient scheduling */}
-          <button
-            onClick={() => navigate('/app/schedule')}
-            className="w-full py-3 rounded-xl transition-all hover:bg-blue-50 border"
-            style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 15, fontWeight: 600 }}
-          >
-            Agendar cita como paciente →
-          </button>
+          {/* Patient options */}
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => navigate('/register')}
+              className="w-full py-3 rounded-xl transition-all hover:bg-blue-50 border"
+              style={{ borderColor: COLORS.blue, color: COLORS.blue, fontSize: 15, fontWeight: 600 }}
+            >
+              Registrarme como paciente
+            </button>
+            <p className="text-center" style={{ color: COLORS.gray, fontSize: 13 }}>
+              ¿Ya tienes cuenta?{' '}
+              <span style={{ color: COLORS.textLight, fontSize: 13 }}>
+                Ingresa arriba con tu usuario y contraseña
+              </span>
+            </p>
+          </div>
 
           {/* Security badge */}
           <div className="flex items-center justify-center gap-1.5 mt-5">

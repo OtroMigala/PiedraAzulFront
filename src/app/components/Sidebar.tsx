@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { COLORS } from '../data/mockData';
 import { clearAuth } from '../store/authStore';
+import piedrazulLogoWhite from '../../assetis/media/PiedrazulLogoWhite.png';
 
 type Role = 'admin' | 'doctor' | 'scheduler' | 'patient';
 
@@ -104,9 +105,7 @@ export function Sidebar({ role, isOpen, onClose, onNewAppointmentClick, userFull
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid rgba(255,255,255,0.1)` }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: COLORS.blue }}>
-              <span className="text-white text-base" style={{ fontWeight: 700 }}>P</span>
-            </div>
+            <img src={piedrazulLogoWhite} alt="Piedrazul" className="w-20 h-20 object-contain" />
             <div>
               <div className="text-white text-sm" style={{ fontWeight: 700, letterSpacing: '0.5px' }}>Piedrazul</div>
               <div style={{ color: COLORS.gray, fontSize: 12 }}>Centro Médico</div>
@@ -201,9 +200,7 @@ export function Topbar({ onMenuClick, pageTitle }: TopbarProps) {
         <Menu size={24} />
       </button>
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: COLORS.blue }}>
-          <span className="text-white" style={{ fontSize: 13, fontWeight: 700 }}>P</span>
-        </div>
+        <img src={piedrazulLogoWhite} alt="Piedrazul" className="w-40 h-40 object-contain" />
         <span className="text-white text-sm" style={{ fontWeight: 600 }}>{pageTitle}</span>
       </div>
     </header>

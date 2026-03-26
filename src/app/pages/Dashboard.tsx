@@ -43,7 +43,7 @@ export default function Dashboard() {
           <p style={{ color: COLORS.textLight, fontSize: 14 }}>Jueves, 20 de febrero de 2025</p>
         </div>
         <button
-          onClick={() => navigate('/agenda')}
+          onClick={() => navigate('/app/agenda')}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white shadow-md hover:shadow-lg transition-all hover:opacity-90"
           style={{ background: `linear-gradient(135deg, ${COLORS.blue} 0%, ${COLORS.blueDark} 100%)`, fontSize: 14, fontWeight: 700 }}
         >
@@ -130,7 +130,7 @@ export default function Dashboard() {
                           <div
                             className="rounded-lg px-3 py-2 flex items-center gap-3 cursor-pointer hover:opacity-90 transition-all"
                             style={{ background: appt.color + '18', border: `1px solid ${appt.color}40` }}
-                            onClick={() => navigate('/agenda')}
+                            onClick={() => navigate('/app/agenda')}
                           >
                             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: appt.color }} />
                             <div className="flex-1 min-w-0">
@@ -152,7 +152,7 @@ export default function Dashboard() {
                           <div
                             className="rounded-lg border border-dashed h-10 flex items-center px-3 cursor-pointer hover:bg-blue-50 transition-colors group"
                             style={{ borderColor: COLORS.border }}
-                            onClick={() => navigate('/agenda')}
+                            onClick={() => navigate('/app/agenda')}
                           >
                             <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: COLORS.blue }}>
                               + Agregar cita

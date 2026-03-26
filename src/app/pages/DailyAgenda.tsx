@@ -6,6 +6,10 @@ import {
 } from 'lucide-react';
 import { COLORS, APPOINTMENTS_TODAY, DOCTORS } from '../data/mockData';
 import { apiFetch } from '../services/api';
+import type { AppointmentApiItem } from '../types/appointment.types';
+import type { DoctorApiItem } from '../types/doctor.types';
+import { GENDER_MAP } from '../types/common.types';
+import type { Gender } from '../types/common.types';
 
 // Helper: get Spanish day name from date string
 function getDayName(dateStr: string): string {
@@ -374,9 +378,19 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
   // El backend filtra ocupados; lista vacía para compatibilidad del render
   const occupiedSlots: string[] = [];
 
-  const GENDER_MAP: Record<string, number> = { Masculino: 0, Femenino: 1, Otro: 2 };
-
   const handleSave = async () => {
+    // Validar datos del paciente cuando es nuevo registro (CA2.2)
+    if (!foundPatient) {
+      if (!form.document.trim() || !form.names.trim() || !form.phone.trim() || !form.gender) {
+        setSubmitError('Documento, nombres y apellidos, celular y género son obligatorios para registrar el paciente.');
+        return;
+      }
+      // Validar formato de email solo si fue ingresado (CA2.3 — campo opcional)
+      if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+        setSubmitError('El correo electrónico no tiene un formato válido.');
+        return;
+      }
+    }
     if (!form.doctorId || !form.date || !form.time) {
       setConflictError('Selecciona médico, fecha y hora.');
       return;
@@ -390,7 +404,7 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
     const patientName = foundPatient ? foundPatient.name : form.names;
     const patientPhone = foundPatient ? foundPatient.phone : form.phone;
     const rawGender = foundPatient ? foundPatient.gender : form.gender;
-    const genderValue = GENDER_MAP[rawGender] ?? 0;
+    const genderValue = GENDER_MAP[rawGender as Gender] ?? 0;
     const rawBirth = foundPatient ? foundPatient.birthDate : form.birthDate;
     const birthDateValue = rawBirth ? `${rawBirth}T00:00:00` : null;
     const emailValue = form.email || null;
@@ -712,9 +726,9 @@ export default function DailyAgenda() {
   React.useEffect(() => {
     setDoctorsError('');
     console.log('%c[DailyAgenda] Cargando médicos desde /api/doctors…', 'color:#4285F4');
-    apiFetch('/api/doctors')
-      .then((res: unknown) => {
-        const list = res as Array<{ id: string; fullName: string; type: string; isActive: boolean }>;
+    apiFetch<DoctorApiItem[]>('/api/doctors')
+      .then((res) => {
+        const list = res as DoctorApiItem[];
         if (!Array.isArray(list)) {
           console.error('[DailyAgenda] ❌ La respuesta de /api/doctors no es un array:', list);
           setDoctorsError('Respuesta inesperada del servidor al cargar médicos');
@@ -726,9 +740,9 @@ export default function DailyAgenda() {
             .filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; })
             .map(d => ({
               id: d.id,
-              name: d.fullName ?? '',
+              name: d.fullName,
               type: d.type === 'Doctor' ? 'Médico' : 'Terapista',
-              status: d.isActive ? 'Activo' : 'Inactivo',
+              status: d.isActive === false ? 'Inactivo' : 'Activo',
             }))
         );
         console.log(`%c[DailyAgenda] Médicos cargados: ${list.length} registros`, 'color:#0F9D58');
@@ -745,7 +759,7 @@ export default function DailyAgenda() {
     console.log(`%c[DailyAgenda] Cargando citas para la fecha: ${selectedDate}`, 'color:#4285F4');
     apiFetch(`/api/appointments?date=${selectedDate}`)
       .then((res: unknown) => {
-        const list = Array.isArray(res) ? res as Array<any> : [];
+        const list: AppointmentApiItem[] = Array.isArray(res) ? (res as AppointmentApiItem[]) : [];
         setAppointments(list.map(a => ({
           id: a.id,
           date: a.date,
@@ -1014,7 +1028,7 @@ export default function DailyAgenda() {
           onSuccess={() => {
             apiFetch(`/api/appointments?date=${selectedDate}`)
               .then((res: unknown) => {
-                const list = Array.isArray(res) ? res as Array<any> : [];
+                const list: AppointmentApiItem[] = Array.isArray(res) ? (res as AppointmentApiItem[]) : [];
                 setAppointments(list.map(a => ({
                   id: a.id,
                   date: a.date,

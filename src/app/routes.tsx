@@ -8,6 +8,7 @@ import AppointmentsByDoctor from './pages/AppointmentsByDoctor';
 import Doctors from './pages/Doctors';
 import MedicalHistory from './pages/MedicalHistory';
 import SchedulingFlow from './pages/SchedulingFlow';
+import PatientRegister from './pages/PatientRegister';
 import { validateAuth, getRole } from './store/authStore';
 
 // Placeholder pages
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
 
   // Rutas públicas
   { path: '/login', Component: Login },
+  { path: '/register', Component: PatientRegister },
 
 
   // Rutas protegidas bajo /app
