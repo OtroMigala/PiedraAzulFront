@@ -42,24 +42,24 @@ Piedrazul es una aplicación web SPA (Single Page Application) para la gestión 
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                        Cliente (SPA)                      │
+│                        Cliente (SPA)                     │
 │                                                          │
-│  ┌─────────────┐   ┌──────────────┐   ┌──────────────┐  │
-│  │   Routing   │   │    Pages     │   │  Components  │  │
+│  ┌───────────── ┐   ┌──────────────┐   ┌──────────────┐  │
+│  │   Routing    │   │    Pages     │   │  Components  │  │
 │  │ (React Router│   │  (Views por  │   │  (Layout,    │  │
-│  │    v7)      │   │    rol)      │   │  Sidebar, UI)│  │
-│  └──────┬──────┘   └──────┬───────┘   └──────┬───────┘  │
+│  │    v7)       │   │    rol)      │   │  Sidebar, UI)│  │
+│  └──────┬────── ┘   └──────┬───────┘   └──────┬───────┘  │
 │         │                 │                  │           │
-│  ┌──────▼─────────────────▼──────────────────▼───────┐  │
-│  │              State Layer                          │  │
-│  │   authStore (localStorage + in-memory fallback)   │  │
-│  │   React local state + React Hook Form             │  │
-│  └──────────────────────────┬────────────────────────┘  │
+│  ┌──────▼─────────────────▼──────────────────▼───────┐   │
+│  │              State Layer                          │   │
+│  │   authStore (localStorage + in-memory fallback)   │   │
+│  │   React local state + React Hook Form             │   │
+│  └──────────────────────────┬────────────────────────┘   │
 │                             │                            │
-│  ┌──────────────────────────▼────────────────────────┐  │
-│  │              API Service (api.ts)                 │  │
-│  │   Bearer token injection | Error handling | Logs  │  │
-│  └──────────────────────────┬────────────────────────┘  │
+│  ┌──────────────────────────▼────────────────────────┐   │
+│  │              API Service (api.ts)                 │   │
+│  │   Bearer token injection | Error handling | Logs  │   │
+│  └──────────────────────────┬────────────────────────┘   │
 └─────────────────────────────┼────────────────────────────┘
                               │ HTTP/REST
                               ▼
