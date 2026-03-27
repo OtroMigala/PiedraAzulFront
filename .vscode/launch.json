@@ -1,0 +1,12 @@
+{
+	"version":"0.2.0",
+	"configurations":
+	[
+		{
+			"type": "FLispDebugger",
+			"request": "attach",
+			"name": "Attach to ARES Commander",
+			"debugServer": 9995
+		}
+	]
+}

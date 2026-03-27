@@ -10,7 +10,7 @@ import type { AppointmentApiItem } from '../types/appointment.types';
 import type { DoctorApiItem } from '../types/doctor.types';
 import { GENDER_MAP } from '../types/common.types';
 import type { Gender } from '../types/common.types';
-
+import { getRole } from '../store/authStore';
 // Helper: get Spanish day name from date string
 function getDayName(dateStr: string): string {
   const dayMap: Record<number, string> = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado' };
@@ -144,7 +144,7 @@ function RescheduleModal({ appointment, onClose }: RescheduleModalProps) {
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { label: 'Paciente', value: appointment.patient },
-                  { label: 'Fecha y hora', value: `20 Feb 2025, ${appointment.time}` },
+                  { label: 'Fecha y hora', value: `${appointment.date}, ${appointment.time}` },
                   { label: 'Médico', value: appointment.doctor.split(' ').slice(0, 3).join(' ') },
                   { label: 'Especialidad', value: appointment.specialty },
                 ].map((item) => (
@@ -391,6 +391,13 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
         return;
       }
     }
+    if (!foundPatient) {
+  const doc = form.document.replace(/\D/g, '');
+  if (doc.length !== 8 && doc.length !== 10) {
+    setSubmitError('El documento debe tener exactamente 8 o 10 dígitos.');
+    return;
+  }
+}
     if (!form.doctorId || !form.date || !form.time) {
       setConflictError('Selecciona médico, fecha y hora.');
       return;
@@ -509,26 +516,66 @@ export function NewAppointmentModal({ onClose, doctors, onSuccess }: NewAppointm
                   <div className="h-px flex-1" style={{ background: COLORS.border }} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    { key: 'document', label: 'Número de documento', placeholder: 'Ej: 1.020.456.789', req: true },
-                    { key: 'names', label: 'Nombres y apellidos', placeholder: 'Nombre completo', req: true },
-                    { key: 'phone', label: 'Celular', placeholder: 'Ej: 310 234 5678', req: true },
-                    { key: 'email', label: 'Correo electrónico', placeholder: 'Ej: correo@ejemplo.com', req: false },
-                  ].map((field) => (
-                    <div key={field.key}>
-                      <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
-                        {field.label} {field.req && <span style={{ color: COLORS.error }}>*</span>}
-                      </label>
-                      <input
-                        type="text"
-                        placeholder={field.placeholder}
-                        value={form[field.key as keyof typeof form] as string}
-                        onChange={(e) => setForm((f) => ({ ...f, [field.key]: e.target.value }))}
-                        className="w-full px-3 py-2.5 rounded-lg outline-none"
-                        style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
-                      />
-                    </div>
-                  ))}
+                  {/* Documento — con validación de solo números 8 o 10 dígitos */}
+<div>
+  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
+    Número de documento <span style={{ color: COLORS.error }}>*</span>
+  </label>
+  <input
+    type="text"
+    placeholder="Ej: 1034567890"
+    value={form.document}
+    onChange={(e) => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+      setForm((f) => ({ ...f, document: val }));
+    }}
+    className="w-full px-3 py-2.5 rounded-lg outline-none"
+    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
+  />
+  {form.document.length > 0 && form.document.length !== 8 && form.document.length !== 10 && (
+    <p style={{ fontSize: 12, color: COLORS.error, marginTop: 4 }}>
+      El documento debe tener 8 o 10 dígitos
+    </p>
+  )}
+</div>
+
+{/* Nombres — solo letras y espacios */}
+<div>
+  <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
+    Nombres y apellidos <span style={{ color: COLORS.error }}>*</span>
+  </label>
+  <input
+    type="text"
+    placeholder="Nombre completo"
+    value={form.names}
+    onChange={(e) => {
+      const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+      setForm((f) => ({ ...f, names: val }));
+    }}
+    className="w-full px-3 py-2.5 rounded-lg outline-none"
+    style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
+  />
+</div>
+
+{/* Resto de campos */}
+{[
+  { key: 'phone', label: 'Celular', placeholder: 'Ej: 310 234 5678', req: true },
+  { key: 'email', label: 'Correo electrónico', placeholder: 'Ej: correo@ejemplo.com', req: false },
+].map((field) => (
+  <div key={field.key}>
+    <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>
+      {field.label} {field.req && <span style={{ color: COLORS.error }}>*</span>}
+    </label>
+    <input
+      type="text"
+      placeholder={field.placeholder}
+      value={form[field.key as keyof typeof form] as string}
+      onChange={(e) => setForm((f) => ({ ...f, [field.key]: e.target.value }))}
+      className="w-full px-3 py-2.5 rounded-lg outline-none"
+      style={{ border: `1.5px solid ${COLORS.border}`, fontSize: 14, color: COLORS.text, background: COLORS.bg }}
+    />
+  </div>
+))}
                   <div>
                     <label className="block mb-1" style={{ color: COLORS.text, fontSize: 14, fontWeight: 600 }}>Género</label>
                     <div className="relative">
@@ -755,33 +802,39 @@ export default function DailyAgenda() {
   }, []);
 
   React.useEffect(() => {
-    setLoadingAppts(true);
-    console.log(`%c[DailyAgenda] Cargando citas para la fecha: ${selectedDate}`, 'color:#4285F4');
-    apiFetch(`/api/appointments?date=${selectedDate}`)
-      .then((res: unknown) => {
-        const list: AppointmentApiItem[] = Array.isArray(res) ? (res as AppointmentApiItem[]) : [];
-        setAppointments(list.map(a => ({
-          id: a.id,
-          date: a.date,
-          time: a.time,
-          patient: a.patientName,
-          document: a.documentId,
-          phone: a.phone,
-          specialty: a.specialty,
-          doctor: a.doctorName,
-          doctorId: a.doctorId,
-          observation: a.observation,
-          status: a.status,
-          color: COLORS.blue,
-        })));
-        console.log(`%c[DailyAgenda] Citas del ${selectedDate}: ${list.length} registros`, 'color:#0F9D58', list);
-      })
-      .catch((err: unknown) => {
-        console.error(`[DailyAgenda] ❌ Error al cargar citas para ${selectedDate}:`, err);
-        setAppointments([]);
-      })
-      .finally(() => setLoadingAppts(false));
-  }, [selectedDate]);
+  setLoadingAppts(true);
+  const role = getRole();
+  const url = role === 'Patient'
+    ? '/api/patient/appointments'
+    : `/api/appointments?date=${selectedDate}`;
+
+  console.log(`%c[DailyAgenda] Cargando citas: ${url}`, 'color:#4285F4');
+  apiFetch(url)
+    .then((res: unknown) => {
+      const list: AppointmentApiItem[] = Array.isArray(res) ? (res as AppointmentApiItem[]) : [];
+      setAppointments(list.map(a => ({
+        id: a.id,
+        date: a.date,
+        time: a.time,
+        patient: a.patientName ?? '',
+        document: a.documentId ?? '',
+        phone: a.phone ?? '',
+        specialty: a.specialty,
+        doctor: a.doctorName,
+        doctorId: a.doctorId,
+        observation: a.observation ?? '',
+        status: a.status,
+        color: COLORS.blue,
+      })));
+      setTotal(list.length);
+      console.log(`%c[DailyAgenda] ${list.length} citas cargadas`, 'color:#0F9D58', list);
+    })
+    .catch((err: unknown) => {
+      console.error('[DailyAgenda] ❌ Error al cargar citas:', err);
+      setAppointments([]);
+    })
+    .finally(() => setLoadingAppts(false));
+}, [selectedDate]);
 
   // Build a lookup of doctor name -> type from API doctors
   const doctorTypeMap = React.useMemo(() => {
@@ -962,7 +1015,7 @@ export default function DailyAgenda() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {appt.status}
+                      {appt.status === 'Scheduled' ? 'Programada' : appt.status}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -1001,15 +1054,15 @@ export default function DailyAgenda() {
         </div>
 
         {loadingAppts ? (
-          <div className="text-center py-12">
-            <p style={{ color: COLORS.gray }}>Cargando...</p>
-          </div>
-        ) : total === 0 && (
-          <div className="text-center py-12">
-            <Calendar size={40} className="mx-auto mb-3" style={{ color: COLORS.gray, opacity: 0.4 }} />
-            <p style={{ color: COLORS.gray }}>No hay citas registradas para esta búsqueda</p>
-          </div>
-        )}
+  <div className="text-center py-12">
+    <p style={{ color: COLORS.gray }}>Cargando...</p>
+  </div>
+) : appointments.length === 0 && (
+  <div className="text-center py-12">
+    <Calendar size={40} className="mx-auto mb-3" style={{ color: COLORS.gray, opacity: 0.4 }} />
+    <p style={{ color: COLORS.gray }}>No hay citas registradas para esta búsqueda</p>
+  </div>
+)}
 
         <div className="px-4 py-3 flex items-center justify-between" style={{ borderTop: `1px solid ${COLORS.border}` }}>
           <span style={{ fontSize: 13, color: COLORS.textLight }}>{total} cita(s) encontrada(s)</span>
