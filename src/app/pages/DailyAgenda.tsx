@@ -49,7 +49,7 @@ function getOccupiedSlots(_doctorName: string, _dateStr: string): string[] {
 }
 
 // Helper: convert AM/PM slot string (e.g. "7:00 AM") to "HH:MM:SS" for the API
-function formatTimeForApi(time: string): string {
+export function formatTimeForApi(time: string): string {
   const [timePart, period] = time.split(' ');
   const [h, m] = timePart.split(':').map(Number);
   let hours = h;
@@ -59,7 +59,7 @@ function formatTimeForApi(time: string): string {
 }
 
 // Helper: convert "HH:MM:SS" (API) → "H:MM AM/PM" (display)
-function parseTimeFromApi(time: string): string {
+export function parseTimeFromApi(time: string): string {
   const [h, m] = time.split(':').map(Number);
   const ampm = h >= 12 ? 'PM' : 'AM';
   const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;

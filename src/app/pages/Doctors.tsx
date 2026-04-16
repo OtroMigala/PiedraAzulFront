@@ -83,7 +83,7 @@ const NAME_MAX_LENGTH = 100;
 // Letras (incluye acentos), espacios y ñ/Ñ
 const NAME_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/;
 
-function sanitizeNameInput(value: string) {
+export function sanitizeNameInput(value: string) {
   return value
     .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '')
     .replace(/\s{2,}/g, ' ')
