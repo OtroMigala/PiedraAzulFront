@@ -1,1 +1,7 @@
 node_modules
+
+## Coverage reports (generated, not committed)
+coverage/
+
+## Claude Code (local AI assistant config)
+.claude/
